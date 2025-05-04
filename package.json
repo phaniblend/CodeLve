@@ -1,0 +1,70 @@
+{
+  "name": "codelve-desktop",
+  "version": "0.1.0",
+  "description": "A desktop app for analyzing local codebases using open-source LLMs via Ollama",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "vite",
+    "dev": "concurrently \"npm run start\" \"npm run electron:dev\"",
+    "build": "vite build",
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux"
+  },
+  "keywords": [
+    "code-analysis",
+    "ollama",
+    "llm",
+    "ai",
+    "desktop",
+    "electron"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "electron": "^29.1.1",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.4"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.1.1",
+    "@tailwindcss/forms": "^0.5.7",
+    "axios": "^1.6.7",
+    "electron-is-dev": "^2.0.0",
+    "electron-store": "^8.1.0",
+    "express": "^4.18.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.22.2",
+    "react-syntax-highlighter": "^15.5.0",
+    "sqlite3": "^5.1.7"
+  },
+  "build": {
+    "appId": "com.codelve.desktop",
+    "productName": "CodeLve Desktop",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "out"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}
