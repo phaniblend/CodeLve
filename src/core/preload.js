@@ -11,14 +11,23 @@ const { contextBridge, ipcRenderer } = require('electron');
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(
   'api', {
+    // Window controls
+    minimizeWindow: () => ipcRenderer.send('window-minimize'),
+    maximizeWindow: () => ipcRenderer.send('window-maximize'),
+    closeWindow: () => ipcRenderer.send('window-close'),
+    
     // AI Service methods
     getOllamaStatus: () => ipcRenderer.invoke('get-ollama-status'),
     queryAI: (params) => ipcRenderer.invoke('query-ai', params),
     
-    // File system operations (will add more as needed)
+    // File system operations
     readFile: (path) => ipcRenderer.invoke('read-file', path),
     writeFile: (path, content) => ipcRenderer.invoke('write-file', path, content),
     listDirectory: (path) => ipcRenderer.invoke('list-directory', path),
+    
+    // Dialog operations
+    showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+    showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
     
     // IDE integration methods
     openFile: (path) => ipcRenderer.invoke('open-file', path),

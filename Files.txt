@@ -1,0 +1,21 @@
+src\CompleteSourceCode.txt : 1521 lines
+src\ai\ollama-service.js : 343 lines
+src\chat\chat-panel.js : 290 lines
+src\core\main.js : 266 lines
+src\ide\ide-launcher.js : 252 lines
+src\chat\chat-panel.css : 234 lines
+src\context\code-context-provider.js : 217 lines
+src\core\process-manager.js : 215 lines
+src\ide\codium-bridge.js : 206 lines
+src\index.html : 205 lines
+src\ui\main-layout.js : 138 lines
+src\renderer.js : 136 lines
+src\ui\main-layout.css : 116 lines
+src\core\preload.js : 46 lines
+proj_docs\CE_Project_Schedule.csv : 44 lines
+.gitignore : 29 lines
+src\Files.txt : 9 lines
+resources\icons\icon.ico : 0 lines
+resources\icons\icon.png : 0 lines
+
+Total Line Count: 4267 lines
