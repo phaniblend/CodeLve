@@ -1,0 +1,44 @@
+Module,File,Start Date,End Date,Status,Developer
+Electron Core Setup,package.json,9-May-25,9-May-25,Complete,Lead Dev
+Electron Core Setup,electron.config.js,9-May-25,9-May-25,Complete,Lead Dev
+Electron Core Setup,.gitignore,9-May-25,9-May-25,Complete,Lead Dev
+Electron Core Setup,README.md,9-May-25,9-May-25,Complete,Lead Dev
+Core Application,src/core/main.js,9-May-25,9-May-25,Complete,Lead Dev
+Core Application,src/core/preload.js,9-May-25,9-May-25,Complete,Lead Dev
+Core Application,src/core/process-manager.js,9-May-25,10-May-25,Complete,Lead Dev
+Core Application,src/renderer.js,10-May-25,10-May-25,Not Started,Lead Dev
+Core Application,src/index.html,10-May-25,10-May-25,Not Started,Lead Dev
+AI Integration,src/ai/ollama-service.js,10-May-25,10-May-25,Complete,Lead Dev
+AI Integration,src/context/code-context-provider.js,10-May-25,11-May-25,Complete,Lead Dev
+AI Integration,src/ai/prompt-templates.js,11-May-25,11-May-25,Not Started,Lead Dev
+AI Integration,src/ai/response-parser.js,11-May-25,12-May-25,Not Started,Lead Dev
+AI Integration,src/ai/model-manager.js,12-May-25,13-May-25,Not Started,Lead Dev
+IDE Integration,src/ide/ide-launcher.js,12-May-25,12-May-25,Complete,Lead Dev
+IDE Integration,src/ide/codium-bridge.js,12-May-25,13-May-25,Not Started,Lead Dev
+IDE Integration,src/ide/file-operations.js,13-May-25,14-May-25,Not Started,Lead Dev
+UI Components,src/ui/main-layout.js,13-May-25,13-May-25,Complete,Lead Dev
+UI Components,src/ui/main-layout.css,13-May-25,13-May-25,Complete,Lead Dev
+UI Components,src/chat/chat-panel.js,13-May-25,14-May-25,Complete,Lead Dev
+UI Components,src/chat/chat-panel.css,14-May-25,14-May-25,Complete,Lead Dev
+UI Components,src/ui/settings-panel.js,14-May-25,15-May-25,Not Started,Lead Dev
+UI Components,src/ui/settings-panel.css,15-May-25,15-May-25,Not Started,Lead Dev
+UI Components,src/ui/status-bar.js,15-May-25,16-May-25,Not Started,Lead Dev
+UI Components,src/ui/app.css,16-May-25,16-May-25,Not Started,Lead Dev
+Data Management,src/data/session-store.js,16-May-25,17-May-25,Not Started,Lead Dev
+Data Management,src/data/settings-store.js,17-May-25,17-May-25,Not Started,Lead Dev
+Data Management,src/data/chat-history.js,17-May-25,18-May-25,Not Started,Lead Dev
+Installer & Packaging,scripts/build-installer.js,18-May-25,19-May-25,Not Started,Lead Dev
+Installer & Packaging,installers/windows/installer.nsh,19-May-25,19-May-25,Not Started,Lead Dev
+Installer & Packaging,installers/windows/codelve.ico,19-May-25,20-May-25,Not Started,Lead Dev
+Installer & Packaging,installers/bundled/README.md,20-May-25,20-May-25,Not Started,Lead Dev
+Installer & Packaging,scripts/download-dependencies.js,20-May-25,21-May-25,Not Started,Lead Dev
+Documentation,docs/srs_and_design.md,21-May-25,21-May-25,Complete,Lead Dev
+Documentation,docs/marketing/product_positioning.md,21-May-25,21-May-25,Complete,Lead Dev
+Documentation,docs/user_manual.md,21-May-25,22-May-25,Not Started,Lead Dev
+Documentation,docs/developer_guide.md,22-May-25,22-May-25,Not Started,Lead Dev
+Documentation,docs/api_reference.md,22-May-25,23-May-25,Not Started,Lead Dev
+Testing,tests/ollama-service.test.js,23-May-25,23-May-25,Not Started,Lead Dev
+Testing,tests/code-context-provider.test.js,23-May-25,24-May-25,Not Started,Lead Dev
+Testing,tests/process-manager.test.js,24-May-25,24-May-25,Not Started,Lead Dev
+Testing,tests/ui-components.test.js,24-May-25,25-May-25,Not Started,Lead Dev
+Testing,tests/end-to-end.test.js,25-May-25,25-May-25,Not Started,Lead Dev

@@ -1,0 +1,9 @@
+ai\ollama-service.js : 343 lines
+chat\chat-panel.js : 290 lines
+ide\ide-launcher.js : 252 lines
+chat\chat-panel.css : 234 lines
+core\process-manager.js : 215 lines
+core\main.js : 122 lines
+core\preload.js : 37 lines
+
+Total Line Count: 1493 lines
