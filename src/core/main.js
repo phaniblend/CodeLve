@@ -56,7 +56,10 @@ function createMainWindow() {
   });
 
  // Load the UI
-const startUrl = `file://${path.join(__dirname, '../../index.html')}`;
+// Load the UI
+const htmlPath = path.join(__dirname, '..', '..', 'src', 'index.html');
+console.log('Loading HTML from:', htmlPath);
+const startUrl = `file://${htmlPath}`;
   
 mainWindow.loadURL(startUrl);
 

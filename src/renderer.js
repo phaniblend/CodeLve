@@ -4,107 +4,63 @@
  * Initializes the user interface and connects it to the backend services
  */
 
-// Import UI components
-const MainLayout = require('./ui/main-layout');
-const ChatPanel = require('./chat/chat-panel');
-const CodeContextProvider = require('./context/code-context-provider');
-
-// Reference to the API exposed by the preload script
-const { api, appInfo } = window;
-
 // UI component instances
 let mainLayout;
 let chatPanel;
 let codeContextProvider;
+
+// Window control handlers
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('minimize-button')?.addEventListener('click', () => {
+    if (window.api && window.api.minimizeWindow) {
+      window.api.minimizeWindow();
+    } else {
+      console.error('Window API not available');
+    }
+  });
+  
+  document.getElementById('maximize-button')?.addEventListener('click', () => {
+    if (window.api && window.api.maximizeWindow) {
+      window.api.maximizeWindow();
+    } else {
+      console.error('Window API not available');
+    }
+  });
+  
+  document.getElementById('close-button')?.addEventListener('click', () => {
+    if (window.api && window.api.closeWindow) {
+      window.api.closeWindow();
+    } else {
+      console.error('Window API not available');
+    }
+  });
+  
+  document.getElementById('settings-button')?.addEventListener('click', () => {
+    // Will implement settings panel later
+    console.log('Settings button clicked');
+  });
+  
+  // Initialize the application
+  initializeApp();
+});
 
 /**
  * Initialize the application UI
  */
 async function initializeApp() {
   try {
-    console.log(`Initializing CodeLve v${appInfo.version}`);
+    // Check if appInfo is available
+    const version = window.appInfo ? window.appInfo.version : '0.1.0';
+    console.log(`Initializing CodeLve v${version}`);
     
-    // Create code context provider
-    codeContextProvider = new CodeContextProvider();
+    // Handle UI modules once they're implemented
+    // For now, we'll just show a message
+    showErrorMessage('UI components not yet implemented. This is a basic shell.');
     
-    // Create main layout
-    mainLayout = new MainLayout();
-    const { editorContainer, chatContainer } = mainLayout.initialize(document.getElementById('app'));
-    
-    // Create chat panel
-    chatPanel = new ChatPanel();
-    chatPanel.initialize(chatContainer);
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Check Ollama status
-    const ollamaStatus = await api.getOllamaStatus();
-    handleOllamaStatus(ollamaStatus);
-    
-    console.log('CodeLve initialized successfully');
+    console.log('CodeLve basic shell initialized');
   } catch (error) {
     console.error('Error initializing CodeLve:', error);
     showErrorMessage('Failed to initialize application. Please check the logs for details.');
-  }
-}
-
-/**
- * Set up event listeners for UI components
- */
-function setupEventListeners() {
-  // Listen for chat messages
-  chatPanel.on('message', async (message) => {
-    const context = codeContextProvider.getContext();
-    
-    try {
-      const response = await api.queryAI({ prompt: message, context });
-      chatPanel.handleAIResponse(response);
-    } catch (error) {
-      console.error('Error querying AI:', error);
-      chatPanel.addSystemMessage(`Error: Failed to get response from AI. ${error.message}`);
-    }
-  });
-  
-  // Listen for file selection
-  document.addEventListener('file-selected', (event) => {
-    const { filePath, content } = event.detail;
-    codeContextProvider.setActiveFile(filePath, content);
-  });
-  
-  // Listen for project/workspace selection
-  document.addEventListener('project-selected', (event) => {
-    const { projectPath } = event.detail;
-    codeContextProvider.setActiveProject(projectPath);
-  });
-  
-  // Listen for theme changes
-  document.addEventListener('theme-changed', (event) => {
-    const { isDark } = event.detail;
-    document.body.classList.toggle('theme-dark', isDark);
-  });
-}
-
-/**
- * Handle the status of the Ollama service
- * 
- * @param {Object} status Ollama status object
- */
-function handleOllamaStatus(status) {
-  if (!status.running) {
-    chatPanel.addSystemMessage('Ollama service is not running. Some features may not be available.');
-    return;
-  }
-  
-  if (!status.modelAvailable) {
-    chatPanel.addSystemMessage(`Model ${status.modelName} is not available. Please install it through the settings panel.`);
-    return;
-  }
-  
-  if (status.ready) {
-    chatPanel.addSystemMessage(`Connected to AI assistant (${status.modelName}). How can I help you with your code today?`);
-  } else {
-    chatPanel.addSystemMessage(`AI service is initializing. Please wait a moment.`);
   }
 }
 
@@ -119,18 +75,3 @@ function showErrorMessage(message) {
   errorDiv.textContent = message;
   document.body.appendChild(errorDiv);
 }
-
-/**
- * Application cleanup on window unload
- */
-function cleanup() {
-  if (codeContextProvider) {
-    codeContextProvider.cleanup();
-  }
-}
-
-// Initialize the application when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
-
-// Clean up when the window is closed
-window.addEventListener('beforeunload', cleanup);
