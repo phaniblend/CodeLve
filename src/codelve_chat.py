@@ -58,7 +58,7 @@ class CodeLveChat(QWidget):
         
         # Initialize LLM handler (optional)
         try:
-            self.llm_handler = DualLLMHandler(self)
+            self.llm_handler = DualLLMHandler()
         except Exception as e:
             print(f"⚠️ LLM handler not available: {e}")
             self.llm_handler = None

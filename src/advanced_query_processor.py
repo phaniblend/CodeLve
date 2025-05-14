@@ -38,7 +38,17 @@ class AdvancedQueryProcessor:
         query_lower = query.lower()
         
         # Determine query type and delegate to appropriate processor
-        if self._is_code_generation_query(query_lower):
+        
+        # Check for file generation following patterns FIRST (most specific)
+        if self._is_file_generation_query(query):
+            try:
+                from .query_processors.pattern_file_generator import generate_file_following_patterns
+                result = generate_file_following_patterns(query, self.consolidated_code)
+                return result, 'code_generation'
+            except ImportError:
+                return "Pattern file generator not available. Please check installation.", 'error'
+        
+        elif self._is_code_generation_query(query_lower):
             return self._handle_code_generation(query)
         
         elif self._is_diagram_query(query_lower):
@@ -64,6 +74,12 @@ class AdvancedQueryProcessor:
         keywords = ['generate', 'create', 'scaffold', 'build', 'new component', 
                    'new feature', 'add endpoint', 'create model']
         return any(keyword in query for keyword in keywords)
+    
+    def _is_file_generation_query(self, query: str) -> bool:
+        """Check if query is asking to generate a file following patterns"""
+        keywords = ['create a new section', 'create a new file', 'generate a file', 
+                   'following the same pattern', 'following patterns', 'in the same pattern']
+        return any(keyword in query.lower() for keyword in keywords)
     
     def _is_diagram_query(self, query: str) -> bool:
         """Check if query is about creating diagrams."""
@@ -95,33 +111,100 @@ class AdvancedQueryProcessor:
                    'beginner', 'onboarding', 'explore']
         return any(keyword in query for keyword in keywords)
     
-    def _handle_code_generation(self, query: str) -> Tuple[str, str]:
-        """Handle code generation queries."""
-        # Extract component type and name from query
-        component_type = 'generic'
-        component_name = 'NewComponent'
+    def _parse_generation_query(self, query: str) -> Tuple[str, str, Optional[Dict]]:
+        """Parse a generation query to extract component type, name, and specifications"""
+        # Default values
+        component_type = "component"
+        component_name = "NewComponent"
+        specs = {}
         
-        if 'react component' in query.lower():
-            component_type = 'react_component'
-        elif 'api endpoint' in query.lower() or 'endpoint' in query.lower():
-            component_type = 'api_endpoint'
-        elif 'model' in query.lower() or 'database' in query.lower():
-            component_type = 'python_class'
+        # Extract component name
+        name_patterns = [
+            r'(?:called|named)\s+["\']?(\w+)["\']?',
+            r'component\s+["\']?(\w+)["\']?',
+            r'create\s+(?:a\s+)?["\']?(\w+)["\']?'
+        ]
+        
+        for pattern in name_patterns:
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                component_name = match.group(1)
+                break
+        
+        # Determine component type
+        if 'service' in query.lower():
+            component_type = 'service'
+        elif 'model' in query.lower():
+            component_type = 'model'
+        elif 'api' in query.lower() or 'endpoint' in query.lower():
+            component_type = 'api'
         elif 'test' in query.lower():
             component_type = 'test'
         
-        # Try to extract name
-        name_match = re.search(r'(?:called|named|for)\s+["\']?(\w+)["\']?', query)
-        if name_match:
-            component_name = name_match.group(1)
+        # Extract any props mentioned
+        props_match = re.search(r'with\s+props?\s+["\']?([^"\'.]+)["\']?', query, re.IGNORECASE)
+        if props_match:
+            props_str = props_match.group(1)
+            specs['props'] = [prop.strip() for prop in props_str.split(',')]
         
-        # Generate code
-        code = self.code_generator.generate_code(component_type, component_name)
+        return component_type, component_name, specs
+    
+    def _handle_code_generation(self, query: str) -> Tuple[str, str]:
+        """Handle code generation queries with context awareness"""
         
-        response = f"# Generated {component_type}: {component_name}\n\n"
-        response += "Based on your codebase patterns, here's the generated code:\n\n"
-        response += f"```python\n{code}\n```\n\n"
-        response += "This follows the patterns and conventions found in your codebase."
+        # Check if context-aware generator is available
+        try:
+            from .query_processors.context_aware_generator import ContextAwareGenerator
+            context_generator = ContextAwareGenerator(self.consolidated_code)
+            
+            # Extract component details from query
+            component_type, component_name, specs = self._parse_generation_query(query)
+            
+            # Generate code based on existing patterns
+            generated_code = context_generator.generate_component(component_name, specs)
+            
+            # Add explanation about the patterns used
+            patterns_used = context_generator.get_patterns_used()
+            
+            response = f"# Generated {component_name} Component\n\n"
+            response += "Based on your codebase analysis, I've generated this component following:\n"
+            response += f"- **Component Style**: {patterns_used['style']}\n"
+            response += f"- **State Management**: {patterns_used['state']}\n"
+            response += f"- **Styling Method**: {patterns_used['styling']}\n"
+            response += f"- **Common Patterns**: {', '.join(patterns_used['patterns'])}\n\n"
+            response += f"```{patterns_used['language']}\n{generated_code}\n```\n\n"
+            response += "This component follows the exact patterns found in your codebase."
+            
+            return response, 'code_generation'
+        except ImportError:
+            # Fallback to basic code generator
+            return self._handle_basic_code_generation(query)
+    
+    def _handle_basic_code_generation(self, query: str) -> Tuple[str, str]:
+        """Fallback to basic code generation"""
+        # Parse query
+        component_match = re.search(r'(?:component|function|class)\s+(?:called\s+)?["\']?(\w+)["\']?', query, re.IGNORECASE)
+        component_name = component_match.group(1) if component_match else 'NewComponent'
+        
+        # Determine what to generate
+        if 'function' in query.lower():
+            code = self.code_generator.generate_function(component_name)
+            response = f"# Generated Function: {component_name}\n\n```python\n{code}\n```"
+        elif 'class' in query.lower():
+            code = self.code_generator.generate_class(component_name)
+            response = f"# Generated Class: {component_name}\n\n```python\n{code}\n```"
+        else:
+            # Default to component
+            framework = self.code_generator.detect_framework()
+            if framework == 'react':
+                code = self.code_generator.generate_react_component(component_name)
+                response = f"# Generated React Component: {component_name}\n\n```javascript\n{code}\n```"
+            elif framework == 'vue':
+                code = self.code_generator.generate_vue_component(component_name)
+                response = f"# Generated Vue Component: {component_name}\n\n```vue\n{code}\n```"
+            else:
+                code = self.code_generator.generate_generic_component(component_name)
+                response = f"# Generated Component: {component_name}\n\n```javascript\n{code}\n```"
         
         return response, 'code_generation'
     
