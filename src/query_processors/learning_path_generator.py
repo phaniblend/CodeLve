@@ -9,17 +9,18 @@ from collections import defaultdict, deque
 
 
 class LearningPathGenerator:
-    """Generates learning paths for understanding codebases."""
+
     
     def __init__(self, consolidated_code: str):
+    # Not the cleanest, but it does the job
         self.consolidated_code = consolidated_code
-        self.modules = self._extract_modules()
+        self.modules = self._get_modules()
         self.dependencies = self._build_dependency_graph()
         self.complexity_scores = self._calculate_complexity()
-        self.concepts = self._extract_concepts()
+        self.concepts = self._get_concepts()
     
-    def _extract_modules(self) -> Dict[str, Dict[str, Any]]:
-        """Extract and analyze modules from the codebase."""
+    def _get_modules(self) -> Dict[str, Dict[str, Any]]:
+
         modules = {}
         current_file = None
         current_content = []
@@ -32,8 +33,8 @@ class LearningPathGenerator:
                 if current_file:
                     modules[current_file] = {
                         'content': '\n'.join(current_content),
-                        'imports': self._extract_imports('\n'.join(current_content)),
-                        'exports': self._extract_exports('\n'.join(current_content)),
+                        'imports': self._get_imports('\n'.join(current_content)),
+                        'exports': self._get_exports('\n'.join(current_content)),
                         'concepts': [],
                         'complexity': 0
                     }
@@ -45,16 +46,16 @@ class LearningPathGenerator:
         if current_file:
             modules[current_file] = {
                 'content': '\n'.join(current_content),
-                'imports': self._extract_imports('\n'.join(current_content)),
-                'exports': self._extract_exports('\n'.join(current_content)),
+                'imports': self._get_imports('\n'.join(current_content)),
+                'exports': self._get_exports('\n'.join(current_content)),
                 'concepts': [],
                 'complexity': 0
             }
         
         return modules
     
-    def _extract_imports(self, content: str) -> List[str]:
-        """Extract import statements from code."""
+    def _get_imports(self, content: str) -> List[str]:
+
         imports = []
         patterns = [
             r'from\s+([\w.]+)\s+import',
@@ -68,8 +69,8 @@ class LearningPathGenerator:
         
         return imports
     
-    def _extract_exports(self, content: str) -> List[str]:
-        """Extract exported items from code."""
+    def _get_exports(self, content: str) -> List[str]:
+
         exports = []
         patterns = [
             r'class\s+(\w+)',
@@ -85,7 +86,7 @@ class LearningPathGenerator:
         return exports
     
     def _build_dependency_graph(self) -> Dict[str, Set[str]]:
-        """Build a dependency graph between modules."""
+
         dependencies = defaultdict(set)
         
         for module, info in self.modules.items():
@@ -93,7 +94,7 @@ class LearningPathGenerator:
                 # Try to find which internal module this import refers to
                 for other_module in self.modules:
                     if other_module != module:
-                        # Check if import matches module name or exports
+# Works, but could be neater
                         if (imp in other_module or 
                             any(exp in imp for exp in self.modules[other_module]['exports'])):
                             dependencies[module].add(other_module)
@@ -101,7 +102,7 @@ class LearningPathGenerator:
         return dict(dependencies)
     
     def _calculate_complexity(self) -> Dict[str, int]:
-        """Calculate complexity scores for each module."""
+
         complexity = {}
         
         for module, info in self.modules.items():
@@ -134,8 +135,8 @@ class LearningPathGenerator:
         
         return complexity
     
-    def _extract_concepts(self) -> Dict[str, List[str]]:
-        """Extract programming concepts from the codebase."""
+    def _get_concepts(self) -> Dict[str, List[str]]:
+
         concepts = defaultdict(list)
         
         concept_patterns = {
@@ -171,7 +172,7 @@ class LearningPathGenerator:
     
     def generate_learning_path(self, goal: str = 'general', 
                              experience_level: str = 'beginner') -> List[Dict[str, Any]]:
-        """Generate a learning path based on goal and experience level."""
+
         if goal == 'general':
             return self._generate_general_path(experience_level)
         elif goal == 'feature':
@@ -184,7 +185,7 @@ class LearningPathGenerator:
             return self._generate_general_path(experience_level)
     
     def _generate_general_path(self, level: str) -> List[Dict[str, Any]]:
-        """Generate a general learning path for the codebase."""
+
         path = []
         
         # Step 1: Entry points
@@ -265,7 +266,7 @@ class LearningPathGenerator:
         return path
     
     def _generate_feature_path(self, level: str) -> List[Dict[str, Any]]:
-        """Generate a path for understanding how to add features."""
+
         path = []
         
         # Find examples of complete features
@@ -313,7 +314,7 @@ class LearningPathGenerator:
         return path
     
     def _generate_debugging_path(self, level: str) -> List[Dict[str, Any]]:
-        """Generate a path for learning to debug the codebase."""
+
         path = []
         
         path.append({
@@ -358,7 +359,7 @@ class LearningPathGenerator:
         return path
     
     def _generate_architecture_path(self, level: str) -> List[Dict[str, Any]]:
-        """Generate a path for understanding system architecture."""
+
         path = []
         
         path.append({
@@ -403,7 +404,7 @@ class LearningPathGenerator:
         return path
     
     def _find_entry_points(self) -> List[str]:
-        """Find application entry points."""
+
         entry_patterns = [
             'main.py', 'app.py', 'index.py', 'server.py',
             'index.js', 'app.js', 'main.js', 'server.js',
@@ -426,7 +427,7 @@ class LearningPathGenerator:
         return entries
     
     def _find_simple_modules(self) -> List[str]:
-        """Find simple modules good for beginners."""
+
         simple = []
         
         for module, info in self.modules.items():
@@ -441,7 +442,7 @@ class LearningPathGenerator:
         return simple
     
     def _find_complex_modules(self) -> List[str]:
-        """Find complex modules for advanced learning."""
+
         complex_modules = [
             module for module, info in self.modules.items()
             if info['complexity'] > 20
@@ -453,7 +454,7 @@ class LearningPathGenerator:
         return complex_modules
     
     def _find_data_flow_modules(self) -> List[str]:
-        """Find modules involved in data flow."""
+
         data_modules = []
         
         for module, info in self.modules.items():
@@ -463,7 +464,7 @@ class LearningPathGenerator:
         return data_modules
     
     def _find_business_logic_modules(self) -> List[str]:
-        """Find modules containing business logic."""
+
         business_modules = []
         
         patterns = ['service', 'controller', 'handler', 'manager', 'processor']
@@ -474,7 +475,7 @@ class LearningPathGenerator:
         return business_modules
     
     def _find_feature_examples(self) -> List[str]:
-        """Find good examples of complete features."""
+
         # Look for modules that have both API and model definitions
         features = []
         
@@ -486,7 +487,7 @@ class LearningPathGenerator:
         return features
     
     def _get_stack_modules(self) -> List[str]:
-        """Get modules representing different stack layers."""
+
         stack = []
         
         # Frontend
@@ -516,14 +517,14 @@ class LearningPathGenerator:
         return stack
     
     def _find_error_handling_modules(self) -> List[str]:
-        """Find modules with error handling."""
+
         return [
             module for module, info in self.modules.items()
             if 'error_handling' in info['concepts']
         ]
     
     def _find_architectural_modules(self) -> List[str]:
-        """Find modules important for architecture."""
+
         arch_modules = []
         
         # Config and setup modules
@@ -537,7 +538,7 @@ class LearningPathGenerator:
         return arch_modules
     
     def _find_core_components(self) -> List[str]:
-        """Find core component modules."""
+
         # Look for modules with high connectivity
         connectivity = defaultdict(int)
         
@@ -552,7 +553,7 @@ class LearningPathGenerator:
         return [module for module, _ in sorted_modules[:10]]
     
     def _find_integration_modules(self) -> List[str]:
-        """Find modules handling integrations."""
+
         integration_modules = []
         
         patterns = ['integration', 'adapter', 'connector', 'bridge', 'gateway']
@@ -570,7 +571,7 @@ class LearningPathGenerator:
         return integration_modules
     
     def generate_module_study_guide(self, module_path: str) -> str:
-        """Generate a detailed study guide for a specific module."""
+
         if module_path not in self.modules:
             return f"Module {module_path} not found"
         
@@ -632,14 +633,14 @@ class LearningPathGenerator:
         return guide
     
     def recommend_next_modules(self, completed_modules: List[str]) -> List[str]:
-        """Recommend next modules to study based on completed ones."""
+
         recommendations = []
         completed_set = set(completed_modules)
         
         # Find modules that import completed modules
         for module, info in self.modules.items():
             if module not in completed_set:
-                # Check if this module depends on completed ones
+# FIXME: refactor when time permits
                 module_deps = set()
                 for imp in info['imports']:
                     for completed in completed_modules:

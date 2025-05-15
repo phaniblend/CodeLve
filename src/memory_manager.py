@@ -5,9 +5,10 @@ from typing import Dict, List, Optional
 import time
 
 class CodebaseMemory:
-    """In-memory codebase storage and indexing system"""
+
     
     def __init__(self):
+    # TODO: revisit this later
         # Complete codebase storage
         self.indexed_files = {}  # file_path -> {content, metadata}
         self.consolidated_context = ""  # Ready-to-use AI context
@@ -23,7 +24,7 @@ class CodebaseMemory:
         self.project_path = None
         
     def index_project(self, scan_result, consolidated_content):
-        """Build complete in-memory index of codebase"""
+
         print("🧠 BUILDING IN-MEMORY CODEBASE INDEX...")
         
         self.project_path = scan_result['root_path']
@@ -51,10 +52,10 @@ class CodebaseMemory:
         print(f"   📝 Lines: {self.total_lines:,}")
         print(f"   💾 Memory: {self.total_chars / 1024 / 1024:.1f}MB")
         print(f"   🔗 Keywords: {len(self.file_index)}")
-        print(f"   ⚡ Functions: {len(self.function_index)}")
+        print(f"  
         
     def _index_file(self, file_info):
-        """Index individual file content and metadata"""
+
         file_path = file_info['path']
         self.indexed_files[file_path] = {
             'content': file_info['content'],
@@ -65,7 +66,7 @@ class CodebaseMemory:
         }
     
     def _build_keyword_index(self):
-        """Build searchable keyword index"""
+
         for file_path, file_data in self.indexed_files.items():
             content = file_data['content'].lower()
             
@@ -80,7 +81,7 @@ class CodebaseMemory:
                     self.file_index[keyword].append(file_path)
     
     def _build_function_index(self):
-        """Extract and index all functions/methods"""
+
         for file_path, file_data in self.indexed_files.items():
             content = file_data['content']
             lines = content.split('\n')
@@ -88,7 +89,7 @@ class CodebaseMemory:
             for i, line in enumerate(lines):
                 # Simple function detection (can be enhanced)
                 if any(pattern in line for pattern in ['function ', 'const ', '= (', 'export const']):
-                    func_name = self._extract_function_name(line)
+                    func_name = self._get_function_name(line)
                     if func_name:
                         self.function_index[func_name] = {
                             'file': file_path,
@@ -97,20 +98,19 @@ class CodebaseMemory:
                         }
     
     def _build_import_graph(self):
-        """Build dependency graph between files"""
+
         for file_path, file_data in self.indexed_files.items():
             content = file_data['content']
             imports = []
-            
-            # Extract imports (simplified)
+# Not the cleanest, but it does the job
             for line in content.split('\n'):
                 if line.strip().startswith('import'):
                     imports.append(line.strip())
             
             self.import_graph[file_path] = imports
     
-    def _extract_function_name(self, line):
-        """Extract function name from code line"""
+    def _get_function_name(self, line):
+
         # Simplified extraction - can be enhanced
         if 'function ' in line:
             return line.split('function ')[1].split('(')[0].strip()
@@ -119,25 +119,25 @@ class CodebaseMemory:
         return None
     
     def get_ready_context(self):
-        """Get pre-built AI context - INSTANT ACCESS"""
+
         return self.consolidated_context
     
     def search_files(self, keyword):
-        """Instant keyword search in indexed files"""
+
         return self.file_index.get(keyword.lower(), [])
     
     def get_file_content(self, file_path):
-        """Get specific file content from memory"""
+
         return self.indexed_files.get(file_path, {}).get('content', '')
     
     def get_functions(self, pattern=None):
-        """Get functions matching pattern"""
+
         if pattern:
             return {k: v for k, v in self.function_index.items() if pattern.lower() in k.lower()}
         return self.function_index
     
     def get_memory_stats(self):
-        """Get current memory usage stats"""
+
         return {
             'files': self.total_files,
             'lines': self.total_lines,
@@ -148,7 +148,7 @@ class CodebaseMemory:
         }
     
     def flush_memory(self):
-        """Clear all memory on app closure"""
+
         print("🗑️ FLUSHING CODEBASE MEMORY...")
         self.indexed_files.clear()
         self.consolidated_context = ""

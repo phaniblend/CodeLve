@@ -9,15 +9,15 @@ from collections import defaultdict, Counter
 
 
 class PatternAnalyzer:
-    """Analyzes patterns and conventions in the codebase."""
+
     
     def __init__(self, consolidated_code: str):
         self.consolidated_code = consolidated_code
-        self.files = self._extract_files()
+        self.files = self._get_files()
         self.patterns_cache = {}
     
-    def _extract_files(self) -> Dict[str, str]:
-        """Extract individual files from consolidated code."""
+    def _get_files(self) -> Dict[str, str]:
+
         files = {}
         current_file = None
         current_content = []
@@ -39,20 +39,20 @@ class PatternAnalyzer:
         
         return files
     
-    def analyze_naming_patterns(self) -> Dict[str, Any]:
-        """Analyze naming conventions used in the codebase."""
+    def check_naming_patterns(self) -> Dict[str, Any]:
+
         patterns = {
-            'functions': self._analyze_function_naming(),
-            'classes': self._analyze_class_naming(),
-            'variables': self._analyze_variable_naming(),
-            'constants': self._analyze_constant_naming(),
-            'files': self._analyze_file_naming()
+            'functions': self._check_function_naming(),
+            'classes': self._check_class_naming(),
+            'variables': self._check_variable_naming(),
+            'constants': self._check_constant_naming(),
+            'files': self._check_file_naming()
         }
         
         return patterns
     
-    def _analyze_function_naming(self) -> Dict[str, Any]:
-        """Analyze function naming patterns."""
+    def _check_function_naming(self) -> Dict[str, Any]:
+
         function_pattern = r'def\s+(\w+)\s*\('
         functions = re.findall(function_pattern, self.consolidated_code)
         
@@ -64,7 +64,7 @@ class PatternAnalyzer:
         }
         
         for func in functions:
-            # Detect naming style
+# Works, but could be neater
             if '_' in func:
                 patterns['styles']['snake_case'] += 1
             elif func[0].islower() and any(c.isupper() for c in func[1:]):
@@ -82,8 +82,7 @@ class PatternAnalyzer:
             # Store examples
             if len(patterns['examples']) < 10:
                 patterns['examples'].append(func)
-        
-        # Determine dominant style
+# Not the cleanest, but it does the job
         if patterns['styles']:
             patterns['dominant_style'] = max(patterns['styles'].items(), key=lambda x: x[1])[0]
         else:
@@ -91,8 +90,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_class_naming(self) -> Dict[str, Any]:
-        """Analyze class naming patterns."""
+    def _check_class_naming(self) -> Dict[str, Any]:
+
         class_pattern = r'class\s+(\w+)'
         classes = re.findall(class_pattern, self.consolidated_code)
         
@@ -104,7 +103,7 @@ class PatternAnalyzer:
         }
         
         for cls in classes:
-            # Detect naming style
+# Works, but could be neater
             if cls[0].isupper() and '_' not in cls:
                 patterns['styles']['PascalCase'] += 1
             elif '_' in cls:
@@ -120,8 +119,7 @@ class PatternAnalyzer:
             # Store examples
             if len(patterns['examples']) < 10:
                 patterns['examples'].append(cls)
-        
-        # Determine dominant style
+# Quick workaround for now
         if patterns['styles']:
             patterns['dominant_style'] = max(patterns['styles'].items(), key=lambda x: x[1])[0]
         else:
@@ -129,8 +127,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_variable_naming(self) -> Dict[str, Any]:
-        """Analyze variable naming patterns."""
+    def _check_variable_naming(self) -> Dict[str, Any]:
+
         # Simple variable assignment pattern
         var_pattern = r'(\w+)\s*=\s*[^=]'
         variables = re.findall(var_pattern, self.consolidated_code)
@@ -146,8 +144,7 @@ class PatternAnalyzer:
             # Skip constants (all uppercase)
             if var.isupper():
                 continue
-            
-            # Detect style
+# FIXME: refactor when time permits
             if '_' in var:
                 patterns['styles']['snake_case'] += 1
             elif var[0].islower() and any(c.isupper() for c in var[1:]):
@@ -170,8 +167,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_constant_naming(self) -> Dict[str, Any]:
-        """Analyze constant naming patterns."""
+    def _check_constant_naming(self) -> Dict[str, Any]:
+
         # Constants are typically all uppercase
         const_pattern = r'([A-Z_]+)\s*=\s*[^=]'
         constants = re.findall(const_pattern, self.consolidated_code)
@@ -189,8 +186,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_file_naming(self) -> Dict[str, Any]:
-        """Analyze file naming patterns."""
+    def _check_file_naming(self) -> Dict[str, Any]:
+
         patterns = {
             'total': len(self.files),
             'extensions': Counter(),
@@ -223,20 +220,20 @@ class PatternAnalyzer:
         
         return patterns
     
-    def analyze_code_structure_patterns(self) -> Dict[str, Any]:
-        """Analyze code structure patterns."""
+    def check_code_structure_patterns(self) -> Dict[str, Any]:
+
         patterns = {
-            'imports': self._analyze_import_patterns(),
-            'functions': self._analyze_function_patterns(),
-            'classes': self._analyze_class_patterns(),
-            'comments': self._analyze_comment_patterns(),
-            'error_handling': self._analyze_error_handling_patterns()
+            'imports': self._check_import_patterns(),
+            'functions': self._check_function_patterns(),
+            'classes': self._check_class_patterns(),
+            'comments': self._check_comment_patterns(),
+            'error_handling': self._check_error_handling_patterns()
         }
         
         return patterns
     
-    def _analyze_import_patterns(self) -> Dict[str, Any]:
-        """Analyze import statement patterns."""
+    def _check_import_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'style': Counter(),  # 'from x import y' vs 'import x'
             'grouping': [],
@@ -266,8 +263,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_function_patterns(self) -> Dict[str, Any]:
-        """Analyze function definition patterns."""
+    def _check_function_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'decorators': Counter(),
             'parameters': {
@@ -331,8 +328,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_class_patterns(self) -> Dict[str, Any]:
-        """Analyze class definition patterns."""
+    def _check_class_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'inheritance': Counter(),
             'methods_per_class': [],
@@ -357,8 +354,7 @@ class PatternAnalyzer:
             # Count methods
             methods = re.findall(r'def\s+\w+\s*\(', body)
             patterns['methods_per_class'].append(len(methods))
-            
-            # Check for decorators
+# FIXME: refactor when time permits
             class_decorators = re.findall(r'@(\w+)', self.consolidated_code[:self.consolidated_code.find(f'class {name}')])
             for dec in class_decorators[-3:]:  # Check last 3 decorators before class
                 if dec == 'dataclass':
@@ -367,8 +363,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_comment_patterns(self) -> Dict[str, Any]:
-        """Analyze commenting patterns."""
+    def _check_comment_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'single_line': 0,
             'multi_line': 0,
@@ -396,8 +392,8 @@ class PatternAnalyzer:
         
         return patterns
     
-    def _analyze_error_handling_patterns(self) -> Dict[str, Any]:
-        """Analyze error handling patterns."""
+    def _check_error_handling_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'try_except_blocks': 0,
             'exception_types': Counter(),
@@ -435,10 +431,9 @@ class PatternAnalyzer:
         return patterns
     
     def find_anti_patterns(self) -> List[Dict[str, Any]]:
-        """Find potential anti-patterns in the code."""
+
         anti_patterns = []
-        
-        # Check for various anti-patterns
+# Works, but could be neater
         anti_patterns.extend(self._find_broad_exception_handling())
         anti_patterns.extend(self._find_magic_numbers())
         anti_patterns.extend(self._find_long_functions())
@@ -448,7 +443,7 @@ class PatternAnalyzer:
         return anti_patterns
     
     def _find_broad_exception_handling(self) -> List[Dict[str, Any]]:
-        """Find overly broad exception handling."""
+
         findings = []
         pattern = r'except\s*(?:Exception)?\s*:'
         
@@ -467,7 +462,7 @@ class PatternAnalyzer:
         return findings
     
     def _find_magic_numbers(self) -> List[Dict[str, Any]]:
-        """Find magic numbers in code."""
+
         findings = []
         # Look for numbers not in common contexts (array indices, simple assignments)
         pattern = r'(?<![\w\[])\b(?:[2-9]|[1-9]\d+)\b(?![\w\]])'
@@ -491,7 +486,7 @@ class PatternAnalyzer:
         return findings
     
     def _find_long_functions(self) -> List[Dict[str, Any]]:
-        """Find functions that are too long."""
+
         findings = []
         
         for file_path, content in self.files.items():
@@ -514,7 +509,7 @@ class PatternAnalyzer:
         return findings
     
     def _find_deep_nesting(self) -> List[Dict[str, Any]]:
-        """Find deeply nested code blocks."""
+
         findings = []
         
         for file_path, content in self.files.items():
@@ -540,7 +535,7 @@ class PatternAnalyzer:
         return findings
     
     def _find_duplicate_code(self) -> List[Dict[str, Any]]:
-        """Find potential duplicate code blocks."""
+
         findings = []
         
         # Simple duplicate detection - look for similar function bodies
@@ -570,11 +565,11 @@ class PatternAnalyzer:
         return findings[:5]  # Limit to first 5 duplicates
     
     def generate_pattern_report(self) -> str:
-        """Generate a comprehensive pattern analysis report."""
+
         report = "# Code Pattern Analysis Report\n\n"
         
         # Naming patterns
-        naming = self.analyze_naming_patterns()
+        naming = self.check_naming_patterns()
         report += "## Naming Conventions\n\n"
         report += f"### Functions ({naming['functions']['total']} found)\n"
         report += f"- Dominant style: **{naming['functions']['dominant_style']}**\n"
@@ -586,7 +581,7 @@ class PatternAnalyzer:
         report += f"- Examples: {', '.join(naming['classes']['examples'][:5])}\n\n"
         
         # Structure patterns
-        structure = self.analyze_code_structure_patterns()
+        structure = self.check_code_structure_patterns()
         report += "## Code Structure Patterns\n\n"
         
         report += "### Import Style\n"

@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 import json
 
 class FrameworkDetector:
-    """Detect framework and primary language of a codebase"""
+
     
     def detect_framework(self, file_contents: Dict[str, str]) -> str:
         """
@@ -22,8 +22,7 @@ class FrameworkDetector:
         """
         # Count files by extension
         extension_counts = self._count_extensions(file_contents)
-        
-        # Check for specific framework indicators
+# Not the cleanest, but it does the job
         framework_scores = {}
         
         # React/Next.js detection
@@ -80,7 +79,7 @@ class FrameworkDetector:
         return self._detect_primary_language(extension_counts)
     
     def _count_extensions(self, file_contents: Dict[str, str]) -> Dict[str, int]:
-        """Count files by extension"""
+
         counts = {}
         for file_path in file_contents.keys():
             ext = Path(file_path).suffix.lower()
@@ -88,19 +87,16 @@ class FrameworkDetector:
         return counts
     
     def _detect_react(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect React/Next.js framework"""
+
         score = 0
-        
-        # Check for React file extensions
+# FIXME: refactor when time permits
         react_extensions = ['.jsx', '.tsx']
         for ext in react_extensions:
             score += ext_counts.get(ext, 0) * 10
-        
-        # Check for TypeScript files
+# TODO: revisit this later
         if ext_counts.get('.ts', 0) > 0 or ext_counts.get('.tsx', 0) > 0:
             score += 20
-        
-        # Check package.json for React
+# TODO: revisit this later
         for file_path, content in file_contents.items():
             if file_path.endswith('package.json'):
                 try:
@@ -116,8 +112,7 @@ class FrameworkDetector:
                         score += 20
                 except:
                     pass
-            
-            # Check for React imports
+# Works, but could be neater
             if file_path.endswith(('.js', '.jsx', '.ts', '.tsx')):
                 if 'import React' in content or 'from "react"' in content or "from 'react'" in content:
                     score += 5
@@ -127,13 +122,11 @@ class FrameworkDetector:
         return score
     
     def _detect_vue(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Vue.js framework"""
+
         score = 0
-        
-        # Check for .vue files
+# Works, but could be neater
         score += ext_counts.get('.vue', 0) * 50
-        
-        # Check package.json
+# Might need cleanup
         for file_path, content in file_contents.items():
             if file_path.endswith('package.json'):
                 try:
@@ -147,17 +140,15 @@ class FrameworkDetector:
         return score
     
     def _detect_angular(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Angular framework"""
+
         score = 0
-        
-        # Check for Angular files
+# FIXME: refactor when time permits
         for file_path in file_contents.keys():
             if '.component.ts' in file_path or '.service.ts' in file_path:
                 score += 10
             if '.module.ts' in file_path:
                 score += 15
-        
-        # Check package.json
+# TODO: revisit this later
         for file_path, content in file_contents.items():
             if file_path.endswith('package.json'):
                 try:
@@ -171,16 +162,14 @@ class FrameworkDetector:
         return score
     
     def _detect_django(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Django framework"""
+
         score = 0
-        
-        # Check for Django files
+# TODO: revisit this later
         django_files = ['manage.py', 'settings.py', 'urls.py', 'wsgi.py']
         for file_path in file_contents.keys():
             if any(df in file_path for df in django_files):
                 score += 20
-        
-        # Check for Django imports
+# Works, but could be neater
         for content in file_contents.values():
             if 'from django' in content or 'import django' in content:
                 score += 5
@@ -189,10 +178,9 @@ class FrameworkDetector:
         return score
     
     def _detect_flask(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Flask framework"""
+
         score = 0
-        
-        # Check for Flask imports
+# Might need cleanup
         for content in file_contents.values():
             if 'from flask import' in content or 'import flask' in content:
                 score += 30
@@ -202,10 +190,9 @@ class FrameworkDetector:
         return score
     
     def _detect_fastapi(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect FastAPI framework"""
+
         score = 0
-        
-        # Check for FastAPI imports
+# Might need cleanup
         for content in file_contents.values():
             if 'from fastapi import' in content or 'import fastapi' in content:
                 score += 30
@@ -215,13 +202,11 @@ class FrameworkDetector:
         return score
     
     def _detect_spring(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Spring Boot framework"""
+
         score = 0
-        
-        # Check for Java files
+# Not the cleanest, but it does the job
         score += ext_counts.get('.java', 0) * 2
-        
-        # Check for Spring annotations
+# FIXME: refactor when time permits
         for content in file_contents.values():
             if '@SpringBootApplication' in content:
                 score += 50
@@ -233,13 +218,11 @@ class FrameworkDetector:
         return score
     
     def _detect_dotnet(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect .NET framework"""
+
         score = 0
-        
-        # Check for C# files
+# FIXME: refactor when time permits
         score += ext_counts.get('.cs', 0) * 5
-        
-        # Check for .NET project files
+# TODO: revisit this later
         for file_path in file_contents.keys():
             if file_path.endswith('.csproj') or file_path.endswith('.sln'):
                 score += 30
@@ -247,10 +230,9 @@ class FrameworkDetector:
         return score
     
     def _detect_express(self, file_contents: Dict[str, str], ext_counts: Dict[str, int]) -> int:
-        """Detect Express.js framework"""
+
         score = 0
-        
-        # Check for Express imports
+# Quick workaround for now
         for content in file_contents.values():
             if "require('express')" in content or 'require("express")' in content:
                 score += 30
@@ -262,7 +244,7 @@ class FrameworkDetector:
         return score
     
     def _detect_primary_language(self, ext_counts: Dict[str, int]) -> str:
-        """Detect primary language based on file extensions"""
+
         # Language mappings
         language_map = {
             '.py': 'Python',
@@ -294,7 +276,7 @@ class FrameworkDetector:
         return primary_language
     
     def detect_framework_or_language(self, codebase_context):
-        """Detect framework or language from codebase context string"""
+
         # Count file extensions from the context
         ext_counts = {}
         lines = codebase_context.split('\n')
@@ -333,7 +315,7 @@ class FrameworkDetector:
         return self.detect_framework(file_contents)
     
     def get_entity_type(self, framework):
-        """Get the primary entity type name for a framework"""
+
         framework_lower = framework.lower()
         
         if 'react' in framework_lower or 'vue' in framework_lower:
@@ -348,7 +330,7 @@ class FrameworkDetector:
             return 'class'
     
     def get_framework_specific_patterns(self, framework):
-        """Get framework-specific patterns to look for"""
+
         framework_lower = framework.lower()
         
         if 'react' in framework_lower:
@@ -365,7 +347,7 @@ class FrameworkDetector:
             return 'Functions, classes, modules, design patterns'
     
     def get_function_keyword(self, framework):
-        """Get the function/method keyword for a framework"""
+
         framework_lower = framework.lower()
         
         if 'python' in framework_lower:
@@ -376,7 +358,7 @@ class FrameworkDetector:
             return 'function'
     
     def get_module_terminology(self, framework):
-        """Get module/package terminology for a framework"""
+
         framework_lower = framework.lower()
         
         if 'python' in framework_lower:
@@ -389,10 +371,9 @@ class FrameworkDetector:
             return 'module'
     
     def determine_app_domain_agnostic(self, codebase_context):
-        """Determine application domain from codebase content"""
+
         content_lower = codebase_context.lower()
-        
-        # Check for domain-specific keywords
+# Might need cleanup
         if 'patient' in content_lower and 'medical' in content_lower:
             return 'Healthcare Management'
         elif 'product' in content_lower and 'cart' in content_lower:

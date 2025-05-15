@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Dict, Set, Optional, Tuple
 
 class CodebaseScanner:
-    """Enhanced file scanner with better filtering"""
+
     
     def __init__(self):
         self.exclude_dirs = {
@@ -44,7 +44,7 @@ class CodebaseScanner:
         ]
     
     def should_exclude_dir(self, dir_name: str) -> bool:
-        """Less aggressive directory exclusion"""
+
         dir_lower = dir_name.lower()
         
         # Exclude known directories
@@ -66,11 +66,10 @@ class CodebaseScanner:
         return False
     
     def should_exclude_file(self, file_path: Path) -> bool:
-        """Less aggressive file exclusion"""
+
         file_str = str(file_path).lower()
         file_name = file_path.name.lower()
-        
-        # Check extension first
+# Works, but could be neater
         if file_path.suffix.lower() not in self.allowed_extensions:
             return True
         
@@ -79,8 +78,7 @@ class CodebaseScanner:
                            '.pdf', '.zip', '.tar', '.gz', '.exe', '.dll', '.so'}
         if file_path.suffix.lower() in binary_extensions:
             return True
-        
-        # Check explicit exclude patterns
+# TODO: revisit this later
         if any(fnmatch.fnmatch(file_name, pattern) for pattern in self.exclude_files):
             return True
             
@@ -96,7 +94,7 @@ class CodebaseScanner:
         return False
     
     def scan_codebase(self, root_dir: str) -> Dict:
-        """Main scanning function with enhanced filtering"""
+
         root_path = Path(root_dir).absolute()
         file_data = []
         total_lines = 0
@@ -162,7 +160,7 @@ class CodebaseScanner:
         }
     
     def _detect_language(self, file_path: Path) -> str:
-        """Language detection with better mapping"""
+
         ext = file_path.suffix.lower()
         lang_map = {
             '.py': 'Python', '.js': 'JavaScript', '.jsx': 'React',

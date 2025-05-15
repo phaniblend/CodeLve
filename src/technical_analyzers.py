@@ -7,17 +7,17 @@ import re
 from pathlib import Path
 
 class TechnicalAnalyzers:
-    """Technical analysis methods for code analysis"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
     
-    def analyze_technical_details_agnostic(self, content, framework):
-        """Analyze technical details in a framework-agnostic way"""
+    def check_technical_details_agnostic(self, content, framework):
+
         details = []
         
         # Analyze code complexity
-        complexity = self._analyze_complexity(content)
+        complexity = self._check_complexity(content)
         details.append(f"**Complexity Score:** {complexity}/10")
         
         # Count key constructs
@@ -36,8 +36,8 @@ class TechnicalAnalyzers:
         
         return '\n'.join(details)
     
-    def _analyze_complexity(self, content):
-        """Analyze code complexity"""
+    def _check_complexity(self, content):
+
         lines = content.split('\n')
         
         # Simple complexity score based on various factors
@@ -84,7 +84,7 @@ class TechnicalAnalyzers:
         return min(10, score)
     
     def _count_constructs(self, content):
-        """Count programming constructs"""
+
         constructs = {
             'Functions': 0,
             'Classes': 0,
@@ -126,7 +126,7 @@ class TechnicalAnalyzers:
         return constructs
     
     def _detect_patterns(self, content, framework):
-        """Detect common patterns based on framework"""
+
         patterns = []
         content_lower = content.lower()
         
@@ -163,8 +163,8 @@ class TechnicalAnalyzers:
         
         return patterns
     
-    def analyze_dependencies(self, content):
-        """Analyze dependencies in the code"""
+    def check_dependencies(self, content):
+
         dependencies = {
             'external': [],
             'internal': []
@@ -174,7 +174,7 @@ class TechnicalAnalyzers:
         
         for line in lines:
             if 'import' in line or 'require' in line:
-                # Extract the module name
+# Might need cleanup
                 if 'from' in line:
                     # Python style
                     match = re.search(r'from\s+(\S+)\s+import', line)
@@ -196,13 +196,12 @@ class TechnicalAnalyzers:
         
         return dependencies
     
-    def analyze_code_quality(self, content):
-        """Analyze code quality indicators"""
+    def check_code_quality(self, content):
+
         quality_issues = []
         
         lines = content.split('\n')
-        
-        # Check for code smells
+# Might need cleanup
         for i, line in enumerate(lines):
             # Long lines
             if len(line) > 120:

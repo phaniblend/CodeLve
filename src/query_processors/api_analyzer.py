@@ -10,16 +10,17 @@ from collections import defaultdict
 
 
 class ApiAnalyzer:
-    """Analyzes API endpoints, routes, and interactions."""
+
     
     def __init__(self, consolidated_code: str):
+    # Not the cleanest, but it does the job
         self.consolidated_code = consolidated_code
-        self.endpoints = self._extract_endpoints()
-        self.models = self._extract_models()
-        self.middleware = self._extract_middleware()
+        self.endpoints = self._get_endpoints()
+        self.models = self._get_models()
+        self.middleware = self._get_middleware()
     
-    def _extract_endpoints(self) -> List[Dict[str, Any]]:
-        """Extract API endpoints from the codebase."""
+    def _get_endpoints(self) -> List[Dict[str, Any]]:
+
         endpoints = []
         
         # Flask patterns
@@ -80,14 +81,14 @@ class ApiAnalyzer:
         return endpoints
     
     def _parse_methods(self, methods_str: str) -> List[str]:
-        """Parse HTTP methods from a string."""
+
         methods = []
         for method in re.findall(r'[\'"](\w+)[\'"]', methods_str):
             methods.append(method.upper())
         return methods if methods else ['GET']
     
     def _categorize_endpoint(self, path: str, handler_name: str) -> str:
-        """Categorize endpoint based on path and handler name."""
+
         path_lower = path.lower()
         handler_lower = handler_name.lower()
         
@@ -128,15 +129,15 @@ class ApiAnalyzer:
         
         return 'general'
     
-    def _extract_models(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Extract data models and schemas."""
+    def _get_models(self) -> Dict[str, List[Dict[str, Any]]]:
+
         models = defaultdict(list)
         
         # Pydantic models
         pydantic_pattern = r'class\s+(\w+)\((?:.*?BaseModel.*?)\):\s*\n((?:\s{4,}.*\n)*)'
         for match in re.finditer(pydantic_pattern, self.consolidated_code):
             model_name, model_body = match.groups()
-            fields = self._extract_pydantic_fields(model_body)
+            fields = self._get_pydantic_fields(model_body)
             models['pydantic'].append({
                 'name': model_name,
                 'fields': fields,
@@ -148,7 +149,7 @@ class ApiAnalyzer:
         for match in re.finditer(sqlalchemy_pattern, self.consolidated_code):
             model_name, model_body = match.groups()
             if '__tablename__' in model_body:
-                fields = self._extract_sqlalchemy_fields(model_body)
+                fields = self._get_sqlalchemy_fields(model_body)
                 models['sqlalchemy'].append({
                     'name': model_name,
                     'fields': fields,
@@ -159,7 +160,7 @@ class ApiAnalyzer:
         django_pattern = r'class\s+(\w+)\(.*?models\.Model.*?\):\s*\n((?:\s{4,}.*\n)*)'
         for match in re.finditer(django_pattern, self.consolidated_code):
             model_name, model_body = match.groups()
-            fields = self._extract_django_fields(model_body)
+            fields = self._get_django_fields(model_body)
             models['django'].append({
                 'name': model_name,
                 'fields': fields
@@ -167,8 +168,8 @@ class ApiAnalyzer:
         
         return dict(models)
     
-    def _extract_pydantic_fields(self, model_body: str) -> List[Dict[str, str]]:
-        """Extract fields from a Pydantic model."""
+    def _get_pydantic_fields(self, model_body: str) -> List[Dict[str, str]]:
+
         fields = []
         field_pattern = r'(\w+)\s*:\s*([^\n=]+?)(?:\s*=\s*([^\n]+))?$'
         
@@ -183,8 +184,8 @@ class ApiAnalyzer:
         
         return fields
     
-    def _extract_sqlalchemy_fields(self, model_body: str) -> List[Dict[str, str]]:
-        """Extract fields from a SQLAlchemy model."""
+    def _get_sqlalchemy_fields(self, model_body: str) -> List[Dict[str, str]]:
+
         fields = []
         field_pattern = r'(\w+)\s*=\s*Column\((.*?)\)'
         
@@ -196,8 +197,7 @@ class ApiAnalyzer:
                 'nullable': 'nullable=False' not in column_def,
                 'primary_key': 'primary_key=True' in column_def
             }
-            
-            # Extract type
+# Might need cleanup
             type_match = re.search(r'(Integer|String|Text|DateTime|Boolean|Float)', column_def)
             if type_match:
                 field_info['type'] = type_match.group(1)
@@ -206,8 +206,8 @@ class ApiAnalyzer:
         
         return fields
     
-    def _extract_django_fields(self, model_body: str) -> List[Dict[str, str]]:
-        """Extract fields from a Django model."""
+    def _get_django_fields(self, model_body: str) -> List[Dict[str, str]]:
+
         fields = []
         field_pattern = r'(\w+)\s*=\s*models\.(\w+)\((.*?)\)'
         
@@ -221,8 +221,8 @@ class ApiAnalyzer:
         
         return fields
     
-    def _extract_middleware(self) -> List[Dict[str, Any]]:
-        """Extract middleware and decorators."""
+    def _get_middleware(self) -> List[Dict[str, Any]]:
+
         middleware = []
         
         # Common middleware patterns
@@ -244,16 +244,16 @@ class ApiAnalyzer:
         
         return middleware
     
-    def analyze_api_structure(self) -> Dict[str, Any]:
-        """Analyze overall API structure."""
+    def check_api_structure(self) -> Dict[str, Any]:
+
         analysis = {
             'total_endpoints': len(self.endpoints),
             'endpoints_by_method': defaultdict(int),
             'endpoints_by_type': defaultdict(int),
             'frameworks_used': set(),
-            'restful_analysis': self._analyze_restful_compliance(),
-            'authentication': self._analyze_authentication(),
-            'versioning': self._analyze_versioning()
+            'restful_analysis': self._check_restful_compliance(),
+            'authentication': self._check_authentication(),
+            'versioning': self._check_versioning()
         }
         
         for endpoint in self.endpoints:
@@ -266,8 +266,8 @@ class ApiAnalyzer:
         
         return analysis
     
-    def _analyze_restful_compliance(self) -> Dict[str, Any]:
-        """Analyze RESTful API compliance."""
+    def _check_restful_compliance(self) -> Dict[str, Any]:
+
         analysis = {
             'resource_endpoints': 0,
             'uses_http_methods': set(),
@@ -275,15 +275,13 @@ class ApiAnalyzer:
             'uses_json': False,
             'compliance_score': 0
         }
-        
-        # Check resource-based URLs
+# Works, but could be neater
         resource_pattern = r'/(?:api/)?(\w+)(?:/\{?\w+\}?)?/?$'
         for endpoint in self.endpoints:
             if re.match(resource_pattern, endpoint['path']):
                 analysis['resource_endpoints'] += 1
             analysis['uses_http_methods'].update(endpoint['methods'])
-        
-        # Check for status codes
+# Quick workaround for now
         status_patterns = [
             (r'(?:status_code|status)\s*=\s*(\d{3})', 'explicit'),
             (r'return\s+.*?,\s*(\d{3})', 'return_tuple'),
@@ -293,8 +291,7 @@ class ApiAnalyzer:
         for pattern, _ in status_patterns:
             for match in re.finditer(pattern, self.consolidated_code):
                 analysis['uses_status_codes'].append(int(match.group(1)))
-        
-        # Check for JSON usage
+# Works, but could be neater
         if any(json_indicator in self.consolidated_code for json_indicator in ['jsonify', 'json()', 'JSONResponse', 'application/json']):
             analysis['uses_json'] = True
         
@@ -314,15 +311,14 @@ class ApiAnalyzer:
         
         return analysis
     
-    def _analyze_authentication(self) -> Dict[str, Any]:
-        """Analyze authentication patterns."""
+    def _check_authentication(self) -> Dict[str, Any]:
+
         analysis = {
             'has_auth': False,
             'auth_types': [],
             'protected_endpoints': 0
         }
-        
-        # Check for authentication patterns
+# FIXME: refactor when time permits
         auth_patterns = {
             'jwt': r'jwt|JWT|JsonWebToken',
             'oauth': r'oauth|OAuth',
@@ -349,15 +345,14 @@ class ApiAnalyzer:
         
         return analysis
     
-    def _analyze_versioning(self) -> Dict[str, Any]:
-        """Analyze API versioning."""
+    def _check_versioning(self) -> Dict[str, Any]:
+
         analysis = {
             'has_versioning': False,
             'version_pattern': None,
             'versions_found': []
         }
-        
-        # Check for version patterns in URLs
+# FIXME: refactor when time permits
         version_patterns = [
             (r'/v(\d+)/', 'url_path'),
             (r'/api/v(\d+)/', 'api_path'),
@@ -376,8 +371,8 @@ class ApiAnalyzer:
         
         return analysis
     
-    def analyze_endpoint_interactions(self, endpoint_path: str) -> Dict[str, Any]:
-        """Analyze interactions for a specific endpoint."""
+    def check_endpoint_interactions(self, endpoint_path: str) -> Dict[str, Any]:
+
         # Find the endpoint
         target_endpoint = None
         for endpoint in self.endpoints:
@@ -454,7 +449,7 @@ class ApiAnalyzer:
         return analysis
     
     def generate_api_documentation(self) -> str:
-        """Generate API documentation from analysis."""
+
         doc = "# API Documentation\n\n"
         
         # Group endpoints by type
@@ -475,7 +470,7 @@ class ApiAnalyzer:
                     doc += "- Async: Yes\n"
                 
                 # Try to find more details
-                interaction = self.analyze_endpoint_interactions(endpoint['path'])
+                interaction = self.check_endpoint_interactions(endpoint['path'])
                 
                 if interaction.get('request_model'):
                     doc += "\n**Request Model:**\n```json\n{\n"
@@ -498,7 +493,7 @@ class ApiAnalyzer:
                 doc += "\n---\n\n"
         
         # Add summary
-        analysis = self.analyze_api_structure()
+        analysis = self.check_api_structure()
         doc += "## API Summary\n\n"
         doc += f"- Total Endpoints: {analysis['total_endpoints']}\n"
         doc += f"- Frameworks: {', '.join(analysis['frameworks_used'])}\n"
@@ -514,11 +509,10 @@ class ApiAnalyzer:
         return doc
     
     def find_api_issues(self) -> List[Dict[str, Any]]:
-        """Find potential API design issues."""
+
         issues = []
-        
-        # Check for missing authentication
-        auth_analysis = self._analyze_authentication()
+# Works, but could be neater
+        auth_analysis = self._check_authentication()
         if not auth_analysis['has_auth'] and len(self.endpoints) > 5:
             issues.append({
                 'type': 'missing_authentication',
@@ -526,8 +520,7 @@ class ApiAnalyzer:
                 'description': 'No authentication mechanism detected',
                 'recommendation': 'Implement authentication for API security'
             })
-        
-        # Check for inconsistent naming
+# Quick workaround for now
         path_styles = defaultdict(int)
         for endpoint in self.endpoints:
             if '-' in endpoint['path']:
@@ -545,8 +538,7 @@ class ApiAnalyzer:
                 'details': dict(path_styles),
                 'recommendation': 'Use consistent naming convention for API paths'
             })
-        
-        # Check for missing error handling
+# Not the cleanest, but it does the job
         if not re.search(r'try:|except\s+\w+:|catch\s*\(', self.consolidated_code):
             issues.append({
                 'type': 'missing_error_handling',
@@ -554,8 +546,7 @@ class ApiAnalyzer:
                 'description': 'No error handling detected in API code',
                 'recommendation': 'Add proper error handling for API endpoints'
             })
-        
-        # Check for missing input validation
+# Might need cleanup
         validation_count = len(re.findall(r'validat|check_|verify_', self.consolidated_code, re.IGNORECASE))
         if validation_count < len(self.endpoints) * 0.5:
             issues.append({
@@ -564,8 +555,7 @@ class ApiAnalyzer:
                 'description': 'Insufficient input validation detected',
                 'recommendation': 'Add input validation for all API endpoints'
             })
-        
-        # Check for hardcoded values
+# Works, but could be neater
         hardcoded_patterns = [
             (r'api_key\s*=\s*[\'"][^\'"]+[\'"]', 'hardcoded_api_key'),
             (r'(?:password|secret)\s*=\s*[\'"][^\'"]+[\'"]', 'hardcoded_secret'),

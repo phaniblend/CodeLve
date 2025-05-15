@@ -7,14 +7,14 @@ import re
 from pathlib import Path
 
 class SearchUtilities:
-    """Search and utility methods for codebase analysis"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
     
     def search_codebase(self, codebase_context, search_term, framework):
-        """Search for term across the entire codebase"""
-        print(f"🔍 Searching for '{search_term}' in {framework} codebase...")
+
+        print(f"
         
         matches = []
         lines = codebase_context.split('\n')
@@ -38,25 +38,25 @@ class SearchUtilities:
         
         return self._format_search_results(search_term, matches, framework)
     
-    def analyze_file(self, query, codebase_context, file_name, framework):
-        """Analyze a specific file"""
-        file_content = self._extract_file_content(file_name, codebase_context)
+    def check_file(self, query, codebase_context, file_name, framework):
+
+        file_content = self._get_file_content(file_name, codebase_context)
         
         if not file_content:
-            return f"❌ File '{file_name}' not found in codebase. Try using exact filename."
+            return f"
         
         # Import technical analyzer
         from .technical_analyzers import TechnicalAnalyzers
         tech_analyzer = TechnicalAnalyzers(self.framework_detector)
         
         # Analyze file
-        technical_details = tech_analyzer.analyze_technical_details_agnostic(file_content, framework)
-        file_stats = self._analyze_file_statistics(file_content)
-        dependencies = self._analyze_file_dependencies(file_content, framework)
+        technical_details = tech_analyzer.check_technical_details_agnostic(file_content, framework)
+        file_stats = self._check_file_statistics(file_content)
+        dependencies = self._check_file_dependencies(file_content, framework)
         
         return f"""# 📄 **File Analysis: {file_name}**
 
-## 📊 **File Statistics**
+
 {file_stats}
 
 ## ⚙️ **Technical Details**
@@ -70,16 +70,16 @@ class SearchUtilities:
 {file_content[:500]}{'...' if len(file_content) > 500 else ''}
 ```
 
-## 💡 **File Insights**
+
 {self._generate_file_insights(file_content, framework)}
 
 ---
-**🎯 File Type:** {self._determine_file_type(file_name, file_content)}
+
 **📈 Complexity:** {self._assess_file_complexity(file_content)}
 """
 
-    def analyze_function_or_method(self, query, codebase_context, function_info, framework):
-        """Analyze a specific function or method"""
+    def check_function_or_method(self, query, codebase_context, function_info, framework):
+
         function_name = function_info.get('function', '')
         file_name = function_info.get('file', '')
         
@@ -87,7 +87,7 @@ class SearchUtilities:
         function_content = self._find_function_in_codebase(function_name, file_name, codebase_context)
         
         if not function_content:
-            return f"""❌ Function '{function_name}' not found in {file_name if file_name else 'codebase'}.
+            return f"""
 
 **Search Suggestions:**
 • `find {function_name}` - Search for function references
@@ -95,25 +95,25 @@ class SearchUtilities:
 • `find function` - List all functions
 """
         
-        return self._analyze_function_detailed(function_name, function_content, framework)
+        return self._check_function_detailed(function_name, function_content, framework)
     
-    def analyze_module(self, query, codebase_context, module_path, framework):
-        """Analyze a module or directory"""
+    def check_module(self, query, codebase_context, module_path, framework):
+
         module_files = self._find_module_files(module_path, codebase_context)
         
         if not module_files:
-            return f"❌ Module '{module_path}' not found. Check the path and try again."
+            return f"
         
-        return self._analyze_module_structure(module_path, module_files, framework)
+        return self._check_module_structure(module_path, module_files, framework)
     
     def _get_line_context(self, lines, target_line, context_size):
-        """Get context around a specific line"""
+
         start = max(0, target_line - context_size)
         end = min(len(lines), target_line + context_size + 1)
         return lines[start:end]
     
     def _format_search_results(self, search_term, matches, framework):
-        """Format search results for display"""
+
         total_matches = len(matches)
         unique_files = len(set(match['file'] for match in matches))
         
@@ -125,7 +125,7 @@ class SearchUtilities:
             files_with_matches[match['file']].append(match)
         
         # Format results
-        result_lines = [f"# 🔍 **Search Results for '{search_term}'**"]
+        result_lines = [f"
         result_lines.append(f"**Found:** {total_matches} matches in {unique_files} files")
         result_lines.append(f"**Framework:** {framework}")
         result_lines.append("")
@@ -143,7 +143,7 @@ class SearchUtilities:
             result_lines.append("")
         
         # Add usage suggestions
-        result_lines.append("## 💡 **Next Steps:**")
+        result_lines.append("
         result_lines.append(f"• `explain {search_term}` - Detailed analysis if it's a component")
         result_lines.append(f"• `analyze [filename]` - Analyze specific files")
         result_lines.append("• `architecture` - See how this fits in overall system")
@@ -151,7 +151,7 @@ class SearchUtilities:
         return '\n'.join(result_lines)
     
     def _generate_search_suggestions(self, search_term, codebase_context, framework):
-        """Generate suggestions when search finds nothing"""
+
         # Find similar terms
         suggestions = []
         words = set()
@@ -166,12 +166,12 @@ class SearchUtilities:
                 word.lower()[:3] in search_term.lower()) and word != search_term:
                 suggestions.append(word)
         
-        return f"""# 🔍 **No Results Found for '{search_term}'**
+        return f"""
 
-## 💡 **Similar Terms Found:**
+
 {chr(10).join([f"• `{s}`" for s in list(set(suggestions))[:8]]) if suggestions else "• No similar terms found"}
 
-## 🎯 **Search Tips:**
+
 • Try partial terms: `find auth` instead of `authentication`
 • Use common keywords: `find service`, `find component`, `find api`
 • Check spelling and try variations
@@ -183,7 +183,7 @@ class SearchUtilities:
 """
 
     def _get_popular_search_terms(self, framework):
-        """Get popular search terms for the framework"""
+
         framework_lower = framework.lower()
         
         if 'react' in framework_lower:
@@ -199,8 +199,8 @@ class SearchUtilities:
         else:
             return "• `function`, `class`, `service`, `api`, `component`"
     
-    def _extract_file_content(self, file_name, codebase_context):
-        """Extract content of a specific file"""
+    def _get_file_content(self, file_name, codebase_context):
+
         lines = codebase_context.split('\n')
         file_content = []
         in_target_file = False
@@ -216,8 +216,8 @@ class SearchUtilities:
         
         return '\n'.join(file_content) if file_content else None
     
-    def _analyze_file_statistics(self, file_content):
-        """Analyze basic file statistics"""
+    def _check_file_statistics(self, file_content):
+
         lines = file_content.split('\n')
         code_lines = [line for line in lines if line.strip() and not line.strip().startswith(('#', '//', '/*'))]
         comment_lines = [line for line in lines if line.strip().startswith(('#', '//', '/*'))]
@@ -229,8 +229,8 @@ class SearchUtilities:
 • **Blank Lines:** {len(blank_lines)}
 • **Code Density:** {len(code_lines)/max(len(lines), 1)*100:.1f}%"""
     
-    def _analyze_file_dependencies(self, file_content, framework):
-        """Analyze file dependencies"""
+    def _check_file_dependencies(self, file_content, framework):
+
         dependencies = []
         lines = file_content.split('\n')
         
@@ -254,7 +254,7 @@ class SearchUtilities:
         return '\n'.join(result)
     
     def _generate_file_insights(self, file_content, framework):
-        """Generate insights about the file"""
+
         insights = []
         content_lower = file_content.lower()
         
@@ -285,7 +285,7 @@ class SearchUtilities:
         return '\n'.join(insights) if insights else "• Standard file structure detected"
     
     def _determine_file_type(self, file_name, file_content):
-        """Determine the type/purpose of the file"""
+
         file_lower = file_name.lower()
         content_lower = file_content.lower()
         
@@ -305,7 +305,7 @@ class SearchUtilities:
             return "Source Code File"
     
     def _assess_file_complexity(self, file_content):
-        """Assess file complexity level"""
+
         complexity_indicators = ['{', '}', 'if', 'for', 'while', 'switch', 'function', 'class']
         complexity_score = sum(file_content.lower().count(indicator) for indicator in complexity_indicators)
         
@@ -317,7 +317,7 @@ class SearchUtilities:
             return "Low"
     
     def _find_function_in_codebase(self, function_name, file_name, codebase_context):
-        """Find specific function content"""
+
         lines = codebase_context.split('\n')
         function_content = []
         in_target_file = not file_name  # If no file specified, search all
@@ -331,7 +331,7 @@ class SearchUtilities:
                 continue
             
             if in_target_file:
-                # Check if we found the function
+# Quick workaround for now
                 if (function_name.lower() in line.lower() and 
                     any(keyword in line.lower() for keyword in ['def', 'function', 'const', 'let'])):
                     in_function = True
@@ -350,14 +350,14 @@ class SearchUtilities:
         
         return '\n'.join(function_content) if function_content else None
     
-    def _analyze_function_detailed(self, function_name, function_content, framework):
-        """Provide detailed function analysis"""
+    def _check_function_detailed(self, function_name, function_content, framework):
+
         # Import technical analyzer
         from .technical_analyzers import TechnicalAnalyzers
         tech_analyzer = TechnicalAnalyzers(self.framework_detector)
         
         lines = function_content.split('\n')
-        technical_details = tech_analyzer.analyze_technical_details_agnostic(function_content, framework)
+        technical_details = tech_analyzer.check_technical_details_agnostic(function_content, framework)
         
         return f"""# 🔧 **Function Analysis: {function_name}**
 
@@ -369,24 +369,24 @@ class SearchUtilities:
 ## ⚙️ **Technical Details**
 {technical_details}
 
-## 📊 **Function Structure**
+
 ```
 {function_content}
 ```
 
-## 💡 **Function Insights**
-{self._analyze_function_insights(function_content, framework)}
 
-## 🎯 **Usage Recommendations**
+{self._check_function_insights(function_content, framework)}
+
+
 {self._generate_function_recommendations(function_content, framework)}
 
 ---
-**🔍 Complexity:** {self._assess_function_complexity(function_content)}
+
 **📈 Quality Score:** {self._calculate_function_quality(function_content)}/100
 """
     
     def _determine_function_type(self, function_content, framework):
-        """Determine function type based on content"""
+
         content_lower = function_content.lower()
         
         if 'async' in content_lower:
@@ -398,8 +398,8 @@ class SearchUtilities:
         else:
             return "Standard Function"
     
-    def _analyze_function_insights(self, function_content, framework):
-        """Generate insights about the function"""
+    def _check_function_insights(self, function_content, framework):
+
         insights = []
         content_lower = function_content.lower()
         
@@ -415,7 +415,7 @@ class SearchUtilities:
         return '\n'.join(insights) if insights else "• Standard function implementation"
     
     def _generate_function_recommendations(self, function_content, framework):
-        """Generate recommendations for the function"""
+
         recommendations = []
         content_lower = function_content.lower()
         
@@ -431,7 +431,7 @@ class SearchUtilities:
         return '\n'.join(recommendations) if recommendations else "• Function follows good practices"
     
     def _assess_function_complexity(self, function_content):
-        """Assess function complexity"""
+
         complexity_keywords = ['if', 'for', 'while', 'switch', 'try', 'catch']
         complexity_score = sum(function_content.lower().count(keyword) for keyword in complexity_keywords)
         
@@ -443,7 +443,7 @@ class SearchUtilities:
             return "Low"
     
     def _calculate_function_quality(self, function_content):
-        """Calculate function quality score"""
+
         score = 70  # Base score
         content_lower = function_content.lower()
         
@@ -466,7 +466,7 @@ class SearchUtilities:
         return max(0, min(100, score))
     
     def _find_module_files(self, module_path, codebase_context):
-        """Find all files in a module/directory"""
+
         module_files = []
         lines = codebase_context.split('\n')
         
@@ -478,11 +478,11 @@ class SearchUtilities:
         
         return module_files
     
-    def _analyze_module_structure(self, module_path, module_files, framework):
-        """Analyze module structure"""
+    def _check_module_structure(self, module_path, module_files, framework):
+
         return f"""# 📁 **Module Analysis: {module_path}**
 
-## 📊 **Module Overview**
+
 **Framework:** {framework}
 **Total Files:** {len(module_files)}
 
@@ -490,17 +490,17 @@ class SearchUtilities:
 {chr(10).join([f"• {Path(f).name}" for f in module_files[:10]])}
 {f"...and {len(module_files) - 10} more files" if len(module_files) > 10 else ""}
 
-## 💡 **Module Insights**
+
 • **Organization:** {'Well-organized' if len(module_files) > 3 else 'Simple'} module structure
 • **Scope:** {'Large' if len(module_files) > 10 else 'Medium' if len(module_files) > 5 else 'Small'} module
 • **Purpose:** {self._determine_module_purpose(module_path, module_files)}
 
 ---
-**🎯 Use `analyze [filename]` to examine specific files in this module**
+
 """
     
     def _determine_module_purpose(self, module_path, module_files):
-        """Determine the purpose of a module"""
+
         path_lower = module_path.lower()
         
         if 'component' in path_lower:

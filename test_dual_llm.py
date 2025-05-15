@@ -13,7 +13,8 @@ from dual_llm_handler import DualLLMHandler
 
 
 def test_dual_llm_handler():
-    """Test the Dual LLM Handler"""
+    # Quick workaround for now
+
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     
     # Initialize handler

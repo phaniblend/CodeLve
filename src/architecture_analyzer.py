@@ -34,8 +34,8 @@ class ArchitectureAnalyzer:
         self.health_analyzer = CodebaseHealthAnalyzer(framework_detector)
         self.doc_generator = ArchitectureDocumentationGenerator(framework_detector)
     
-    def analyze_codebase_architecture(self, codebase_context, framework):
-        """Comprehensive codebase architecture analysis with REAL indexing"""
+    def check_codebase_architecture(self, codebase_context, framework):
+
         print("🏗️ Generating REAL architecture analysis with codebase indexing...")
         
         # Instead of using temp directory, analyze the context directly
@@ -50,8 +50,8 @@ class ArchitectureAnalyzer:
         # This is more digestible and users can ask for more details if needed
         return system_overview
     
-    def analyze_detailed_architecture(self, codebase_context, framework):
-        """Provide detailed architecture analysis when specifically requested"""
+    def check_detailed_architecture(self, codebase_context, framework):
+
         print("🏗️ Generating detailed architecture analysis...")
         
         # Index the codebase
@@ -77,7 +77,7 @@ class ArchitectureAnalyzer:
         return f"{system_overview}\n\n---\n\n{developer_guide}\n\n---\n\n{health_report}\n\n---\n\n{technical_analysis}"
     
     def _index_from_context(self, codebase_context):
-        """Build an in-memory index from the codebase context"""
+
         index = {
             'modules': {},
             'file_count': 0,
@@ -124,7 +124,7 @@ class ArchitectureAnalyzer:
         return index
     
     def _process_file(self, file_path, content, index):
-        """Process a single file and update the index"""
+
         path_obj = Path(file_path)
         module_name = path_obj.stem
         extension = path_obj.suffix
@@ -144,8 +144,7 @@ class ArchitectureAnalyzer:
             if dir_name not in index['by_directory']:
                 index['by_directory'][dir_name] = []
             index['by_directory'][dir_name].append(module_name)
-        
-        # Extract imports and exports
+# FIXME: refactor when time permits
         imports = []
         exports = []
         classes = []
@@ -157,9 +156,9 @@ class ArchitectureAnalyzer:
             if 'export' in line:
                 exports.append(line.strip())
             if 'class ' in line:
-                classes.append(self._extract_name(line, 'class'))
+                classes.append(self._get_name(line, 'class'))
             if 'function ' in line or 'const ' in line:
-                functions.append(self._extract_name(line, 'function|const'))
+                functions.append(self._get_name(line, 'function|const'))
         
         # Store module info
         index['modules'][module_name] = {
@@ -172,14 +171,14 @@ class ArchitectureAnalyzer:
             'extension': extension
         }
     
-    def _extract_name(self, line, pattern):
-        """Extract class/function name from a line"""
+    def _get_name(self, line, pattern):
+
         import re
         match = re.search(f'{pattern}\\s+(\\w+)', line)
         return match.group(1) if match else None
     
     def _identify_entry_points(self, index):
-        """Identify likely entry points"""
+
         entry_patterns = ['index', 'main', 'app', 'server', 'start']
         
         for module_name in index['modules']:
@@ -187,7 +186,7 @@ class ArchitectureAnalyzer:
                 index['entry_points'].append(module_name)
     
     def _format_real_architecture_analysis(self, index_data, framework, codebase_context):
-        """Format the architecture analysis with REAL data"""
+
         
         # Calculate real metrics
         total_files = index_data['file_count']
@@ -210,14 +209,13 @@ class ArchitectureAnalyzer:
         # Count total functions and classes
         total_functions = sum(len(m.get('functions', [])) for m in index_data['modules'].values())
         total_classes = sum(len(m.get('classes', [])) for m in index_data['modules'].values())
-        
-        # Detect patterns and calculate metrics
+# TODO: revisit this later
         patterns = self.pattern_detector.detect_patterns(codebase_context)
         metrics = self.metrics_analyzer.calculate_metrics(codebase_context, index_data)
         
         return f"""# 🏗️ Technical Architecture Analysis
 
-## 📊 System Metrics
+
 Framework/Language: {framework}  
 Total Files: {total_files}  
 Total Lines: {total_lines}  
@@ -229,8 +227,8 @@ Maintainability Index: {metrics.get('maintainability', 'N/A')}
 ## 📁 File Distribution
 {chr(10).join(file_dist[:8])}
 
-## 🎯 Architecture Layers
-{self._analyze_layers(index_data)}
+
+{self._check_layers(index_data)}
 
 ## 🏗️ Architectural Patterns Detected
 {patterns.get('architecture_patterns', 'No specific patterns detected')}
@@ -248,15 +246,15 @@ Core Modules: {self._identify_core_modules(index_data)}
 {chr(10).join(module_org)}
 
 ## 🌐 Import Graph Statistics
-{self._analyze_import_graph(index_data)}
+{self._check_import_graph(index_data)}
 
-## 💡 Recommendations
+
 {self._generate_recommendations(index_data, metrics)}
 
 📈 Architecture Quality: Based on ACTUAL code analysis"""
     
-    def _analyze_layers(self, index_data):
-        """Analyze and format architectural layers"""
+    def _check_layers(self, index_data):
+
         layers = {
             'presentation': 0,
             'business': 0,
@@ -303,12 +301,12 @@ Core Modules: {self._identify_core_modules(index_data)}
         return '\n'.join(layer_output) + '\n' + visual
     
     def _identify_core_modules(self, index_data):
-        """Identify core modules based on import frequency"""
+
         import_counts = {}
         
         for module_info in index_data['modules'].values():
             for imp in module_info.get('imports', []):
-                # Extract module name from import statement
+# Not the cleanest, but it does the job
                 if 'from' in imp:
                     parts = imp.split('from')
                     if len(parts) > 1:
@@ -322,7 +320,7 @@ Core Modules: {self._identify_core_modules(index_data)}
         return ', '.join([m[0] for m in top_modules]) if top_modules else 'None identified'
     
     def _format_top_dependencies(self, index_data):
-        """Format top module dependencies"""
+
         dependency_counts = []
         
         for module_name, info in index_data['modules'].items():
@@ -341,8 +339,8 @@ Core Modules: {self._identify_core_modules(index_data)}
         
         return output
     
-    def _analyze_import_graph(self, index_data):
-        """Analyze import graph statistics"""
+    def _check_import_graph(self, index_data):
+
         total_imports = sum(len(m.get('imports', [])) for m in index_data['modules'].values())
         files_with_imports = sum(1 for m in index_data['modules'].values() if m.get('imports'))
         isolated_files = index_data['file_count'] - files_with_imports
@@ -357,21 +355,18 @@ Core Modules: {self._identify_core_modules(index_data)}
 • Circular Dependencies Found: 0"""
     
     def _generate_recommendations(self, index_data, metrics):
-        """Generate actionable recommendations"""
+
         recommendations = []
-        
-        # Check for large files
+# Might need cleanup
         large_files = [name for name, info in index_data['modules'].items() 
                       if info.get('lines', 0) > 500]
         if large_files:
             recommendations.append(f"• Refactoring: {len(large_files)} files exceed 500 lines")
-        
-        # Check for isolated files
+# TODO: revisit this later
         isolated = index_data['file_count'] - sum(1 for m in index_data['modules'].values() if m.get('imports'))
         if isolated > 0:
             recommendations.append(f"• Integration: {isolated} files have no imports - review modularization")
-        
-        # Check file types
+# TODO: revisit this later
         if '.js' in index_data['by_extension']:
             recommendations.append("• Type Safety: Migrate remaining .js files to TypeScript")
         

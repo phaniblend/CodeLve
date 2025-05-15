@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Set
 
 class CodebaseLoader:
-    """Load source files from a directory with intelligent filtering"""
+
     
     # Supported file extensions
     SUPPORTED_EXTENSIONS = {
@@ -39,6 +39,7 @@ class CodebaseLoader:
     MAX_FILE_SIZE = 5 * 1024 * 1024
     
     def __init__(self):
+    # Might need cleanup
         self.loaded_files = 0
         self.skipped_files = 0
         self.total_size = 0
@@ -53,7 +54,7 @@ class CodebaseLoader:
         Returns:
             Dictionary mapping file paths to their contents
         """
-        print(f"🔍 Scanning directory: {directory_path}")
+        print(f"
         
         file_contents = {}
         directory = Path(directory_path)
@@ -80,7 +81,7 @@ class CodebaseLoader:
                 if self.loaded_files % 50 == 0:
                     print(f"  📄 Loaded {self.loaded_files} files...")
         
-        print(f"\n📊 Loading complete:")
+        print(f"\n
         print(f"  ✅ Loaded: {self.loaded_files} files")
         print(f"  ⏭️  Skipped: {self.skipped_files} files")
         print(f"  📦 Total size: {self._format_size(self.total_size)}")
@@ -88,7 +89,7 @@ class CodebaseLoader:
         return file_contents
     
     def _walk_directory(self, directory: Path) -> List[Path]:
-        """Walk directory and yield file paths"""
+
         files = []
         
         try:
@@ -101,21 +102,17 @@ class CodebaseLoader:
         return files
     
     def _should_exclude_file(self, file_path: Path, relative_path: Path) -> bool:
-        """Check if file should be excluded"""
-        # Check excluded directories
+# Might need cleanup
         for part in relative_path.parts[:-1]:  # All parts except filename
             if part in self.EXCLUDED_DIRS:
                 return True
-        
-        # Check excluded files
+# FIXME: refactor when time permits
         if file_path.name in self.EXCLUDED_FILES:
             return True
-        
-        # Check file extension
+# Not the cleanest, but it does the job
         if file_path.suffix.lower() not in self.SUPPORTED_EXTENSIONS:
             return True
-        
-        # Check file size
+# Not the cleanest, but it does the job
         try:
             if file_path.stat().st_size > self.MAX_FILE_SIZE:
                 return True
@@ -125,7 +122,7 @@ class CodebaseLoader:
         return False
     
     def _load_file(self, file_path: Path) -> str:
-        """Load file content with error handling"""
+
         try:
             # Try UTF-8 first
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -147,7 +144,7 @@ class CodebaseLoader:
             return None
     
     def _format_size(self, size_bytes: int) -> str:
-        """Format size in human-readable format"""
+
         for unit in ['B', 'KB', 'MB', 'GB']:
             if size_bytes < 1024.0:
                 return f"{size_bytes:.2f} {unit}"
@@ -155,7 +152,7 @@ class CodebaseLoader:
         return f"{size_bytes:.2f} TB"
     
     def get_file_stats(self, file_contents: Dict[str, str]) -> Dict[str, any]:
-        """Get statistics about loaded files"""
+
         stats = {
             'total_files': len(file_contents),
             'total_size': sum(len(content) for content in file_contents.values()),

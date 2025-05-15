@@ -2,9 +2,10 @@ import os
 from pathlib import Path
 
 class CodebaseConsolidator:
-    """Consolidates codebase using cg_cat.py logic for proper AI context - Memory only, no file creation"""
+
     
     def __init__(self):
+    # Not the cleanest, but it does the job
         self.exclude_dirs = {
             'node_modules', 'venv', '.git', 'build', 'dist', 'bin', 'obj', 
             '__pycache__', '.vs', '.idea', 'packages', 'vendor', 
@@ -22,7 +23,7 @@ class CodebaseConsolidator:
         self.last_project_path = None
     
     def should_exclude_dir(self, dir_name):
-        """Check if directory should be excluded"""
+
         return dir_name.lower() in self.exclude_dirs
     
     def consolidate_codebase(self, file_paths, project_path=None):
@@ -52,8 +53,7 @@ class CodebaseConsolidator:
         for file_path in file_paths:
             if not os.path.isfile(file_path):
                 continue
-                
-            # Check if it's a source file
+# FIXME: refactor when time permits
             if not any(file_path.lower().endswith(ext) for ext in self.source_extensions):
                 continue
                 
@@ -89,7 +89,7 @@ class CodebaseConsolidator:
         return consolidated_content, file_count, total_lines
     
     def get_consolidation_stats(self, consolidated_content):
-        """Get statistics about consolidated content"""
+
         if not consolidated_content:
             return {'size_mb': 0, 'characters': 0}
         
@@ -100,7 +100,7 @@ class CodebaseConsolidator:
         }
     
     def get_cached_stats(self):
-        """Get stats from cached consolidation"""
+
         if self.cached_consolidation:
             return {
                 'files': self.cached_consolidation['file_count'],
@@ -111,7 +111,7 @@ class CodebaseConsolidator:
         return {'files': 0, 'lines': 0, 'size_mb': 0, 'cached': False}
     
     def clear_cache(self):
-        """Clear cached consolidation"""
+
         self.cached_consolidation = None
         self.last_project_path = None
         print("🗑️ Consolidation cache cleared")

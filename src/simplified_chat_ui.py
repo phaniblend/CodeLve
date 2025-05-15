@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class SimplifiedChatUI:
     def __init__(self, codelve_chat=None):
+    # TODO: revisit this later
         self.codelve_chat = codelve_chat
         self.page = None
         self.chat_messages = None
@@ -26,7 +27,7 @@ class SimplifiedChatUI:
         self.project_loaded = False
         
     def create_message(self, sender: str, message: str, is_user: bool = False):
-        """Create a chat message component"""
+
         # Create message container
         message_container = ft.Container(
             content=ft.Column([
@@ -53,7 +54,7 @@ class SimplifiedChatUI:
         return message_container
     
     async def load_project(self, e):
-        """Load a project from the specified path"""
+
         project_path = self.project_path_input.value.strip()
         
         if not project_path:
@@ -79,7 +80,7 @@ class SimplifiedChatUI:
             loader = CodebaseLoader(project_path)
             
             # Update status
-            self.project_info.value = "🔍 Scanning files..."
+            self.project_info.value = "
             await self.page.update_async()
             
             files = loader.scan_files()
@@ -119,7 +120,7 @@ class SimplifiedChatUI:
             # Show welcome message
             welcome_msg = f"""🎉 **Codebase loaded successfully!**
 
-📊 **Project Stats:**
+
 - Files: {stats['total_files']}
 - Lines: {stats['total_lines']}
 - Size: {stats['total_chars'] / 1024 / 1024:.1f}MB
@@ -152,7 +153,7 @@ Ask me anything about your codebase!"""
             await self.page.update_async()
     
     def _detect_framework(self, consolidated_code: str) -> str:
-        """Simple framework detection"""
+
         if 'import React' in consolidated_code or 'from react' in consolidated_code:
             return 'React' + ('/TypeScript' if '.tsx' in consolidated_code else '/JavaScript')
         elif 'import Vue' in consolidated_code or 'from vue' in consolidated_code:
@@ -165,8 +166,8 @@ Ask me anything about your codebase!"""
             return 'Python' if '.py' in consolidated_code else 'Unknown'
     
     async def show_error(self, message: str):
-        """Show error message"""
-        self.project_info.value = f"❌ {message}"
+
+        self.project_info.value = f"
         self.project_info.color = ft.colors.RED
         await self.page.update_async()
         
@@ -176,7 +177,7 @@ Ask me anything about your codebase!"""
         await self.page.update_async()
     
     async def send_message(self, e):
-        """Handle sending a message"""
+
         if not self.project_loaded:
             await self.show_error("Please load a project first")
             return
@@ -222,7 +223,7 @@ Ask me anything about your codebase!"""
         await self.page.update_async()
     
     async def main(self, page: ft.Page):
-        """Main UI setup"""
+
         self.page = page
         page.title = "CodeLve - AI Codebase Assistant"
         page.theme_mode = ft.ThemeMode.LIGHT
@@ -333,7 +334,7 @@ Ask me anything about your codebase!"""
         await page.update_async()
 
 def run_ui():
-    """Run the UI as a desktop application"""
+
     ui = SimplifiedChatUI()
     ft.app(
         target=ui.main,

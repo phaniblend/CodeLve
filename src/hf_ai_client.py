@@ -13,9 +13,10 @@ from pathlib import Path
 from .framework_detector import FrameworkDetector
 
 class HuggingFaceAIClient:
-    """Enhanced HuggingFace AI client with Dual-LLM Prompt Engineering Layer + Framework-Agnostic Analysis"""
+
     
     def __init__(self):
+    # Might need cleanup
         # DUAL-LLM ARCHITECTURE - Optimized models for perfect quality/size balance
         self.prompt_engineer_model = "microsoft/DialoGPT-small"                    # 117MB - Fast prompt optimization
         self.code_analyzer_model = "deepseek-ai/deepseek-coder-1.3b-instruct"    # 2.6GB - Superior code analysis
@@ -44,7 +45,7 @@ class HuggingFaceAIClient:
         self._load_models()
     
     def _load_models(self):
-        """Load Dual-LLM architecture with fallback to single model"""
+
         try:
             from transformers import AutoTokenizer, AutoModelForCausalLM
             
@@ -54,7 +55,7 @@ class HuggingFaceAIClient:
             # Try to load Dual-LLM first
             try:
                 # Load Prompt Engineering Model (Layer 1)
-                print(f"🎯 Loading Prompt Engineer: Prompt-LLM")
+                print(f"
                 self.prompt_tokenizer = AutoTokenizer.from_pretrained(self.prompt_engineer_model)
                 self.prompt_model = AutoModelForCausalLM.from_pretrained(self.prompt_engineer_model)
                 
@@ -66,7 +67,7 @@ class HuggingFaceAIClient:
                 print("✅ Prompt Engineering Layer ready!")
                 
                 # Load Code Analysis Model (Layer 2)
-                print(f"🤖 Loading Code Analyzer: Code-LLM")
+                print(f"
                 self.code_tokenizer = AutoTokenizer.from_pretrained(self.code_analyzer_model)
                 self.code_model = AutoModelForCausalLM.from_pretrained(self.code_analyzer_model)
                 
@@ -77,14 +78,14 @@ class HuggingFaceAIClient:
                 self.code_model.eval()
                 print("✅ Code Analysis Layer ready!")
                 print("🚀 Dual-LLM Architecture loaded successfully!")
-                print(f"📊 Total models: 2.7GB (Prompt-LLM + Code-LLM)")
+                print(f"
                 
             except Exception as dual_error:
                 print(f"⚠️ Dual-LLM loading failed: {dual_error}")
                 print("🔄 Falling back to single model...")
                 
                 # Fallback to single model (original implementation)
-                print(f"🤖 Loading single model: Code-LLM")
+                print(f"
                 self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
                 
@@ -96,14 +97,14 @@ class HuggingFaceAIClient:
                 print("✅ Code-LLM single model fallback ready!")
             
         except Exception as e:
-            print(f"❌ Failed to load models: {str(e)}")
+            print(f"
             self.prompt_model = None
             self.code_model = None
             self.model = None
             self.tokenizer = None
     
     def get_status(self):
-        """Get AI client status"""
+
         if self.prompt_model and self.code_model:
             return {
                 'architecture': 'dual-llm',
@@ -123,10 +124,8 @@ class HuggingFaceAIClient:
                 'model_loaded': self.model is not None
             }
     
-    def analyze_codebase(self, query, codebase_context):
-        """
-        FIXED ANALYSIS: Framework-Agnostic First → Dual-LLM as Enhancement Only
-        """
+    def check_codebase(self, query, codebase_context):
+
         try:
             print(f"🔄 Processing query through enhanced pipeline...")
             
@@ -135,7 +134,7 @@ class HuggingFaceAIClient:
             pipeline = AnalysisPipeline(self, self.framework_detector)
             
             # PRIMARY: Use Framework-Agnostic Analysis (Proven to work)
-            print("🎯 Using framework-agnostic analysis as primary")
+            print("
             primary_result = pipeline.framework_agnostic_analysis_pipeline(query, codebase_context)
             
             # ENHANCEMENT: Try Dual-LLM enhancement if available (but don't rely on it)
@@ -146,8 +145,8 @@ class HuggingFaceAIClient:
                     
                     # DEBUG: Show what DeepSeek returned
                     if enhanced_result:
-                        print(f"🔍 DeepSeek response length: {len(enhanced_result)}")
-                        print(f"🔍 DeepSeek response preview: {enhanced_result[:300]}...")
+                        print(f"
+                        print(f"
                         
                         # Only use enhanced result if it's clearly better and not just JSON
                         if (len(enhanced_result) > len(primary_result) and 
@@ -158,7 +157,7 @@ class HuggingFaceAIClient:
                             return enhanced_result
                         else:
                             print("⚠️ Dual-LLM result not suitable, using framework-agnostic")
-                            print(f"🔍 Rejection reasons: len={len(enhanced_result)} vs {len(primary_result)}, starts_with_json={enhanced_result.strip().startswith(('{', '['))}, has_dependencies={'dependencies' in enhanced_result.lower()[:100]}")
+                            print(f"
                             return primary_result
                     else:
                         print("⚠️ No DeepSeek response received")
@@ -172,17 +171,17 @@ class HuggingFaceAIClient:
                 return primary_result
                 
         except Exception as e:
-            return f"❌ Analysis failed: {str(e)}\n\nTry rephrasing your query or use more specific terms."
+            return f"
 
     def _dual_llm_analysis(self, query, codebase_context):
-        """STEP 1: Dual-LLM orchestration pipeline"""
+
         try:
             # STEP 1: PROMPT ENGINEERING LAYER
             engineered_prompt = self._engineer_prompt(query, codebase_context)
             
             # STEP 2: CODE ANALYSIS LAYER  
             if engineered_prompt:
-                return self._analyze_with_engineered_prompt(engineered_prompt, codebase_context)
+                return self._check_with_engineered_prompt(engineered_prompt, codebase_context)
             else:
                 # Fallback to framework-agnostic pipeline
                 from .analysis_pipeline import AnalysisPipeline
@@ -196,12 +195,11 @@ class HuggingFaceAIClient:
             return pipeline.framework_agnostic_analysis_pipeline(query, codebase_context)
     
     def _engineer_prompt(self, user_query, codebase_context):
-        """STEP 1: Engineer optimal prompt for code analysis"""
+
         try:
             if not self.prompt_model or not self.prompt_tokenizer:
                 return self._template_prompt_fallback(user_query, codebase_context)
-            
-            # Detect framework/language for context
+# FIXME: refactor when time permits
             detected_framework = self.framework_detector.detect_framework_or_language(codebase_context)
             
             # Create meta-prompt for prompt engineering
@@ -243,7 +241,7 @@ ENGINEERED PROMPT:"""
                 skip_special_tokens=True
             ).strip()
             
-            print(f"🎯 Engineered prompt: {engineered_prompt[:100]}...")
+            print(f"
             return engineered_prompt if engineered_prompt else self._template_prompt_fallback(user_query, codebase_context)
             
         except Exception as e:
@@ -251,7 +249,7 @@ ENGINEERED PROMPT:"""
             return self._template_prompt_fallback(user_query, codebase_context)
     
     def _template_prompt_fallback(self, user_query, codebase_context):
-        """High-quality template-based prompt engineering fallback - Framework Agnostic"""
+
         query_lower = user_query.lower()
         detected_framework = self.framework_detector.detect_framework_or_language(codebase_context)
         
@@ -259,7 +257,7 @@ ENGINEERED PROMPT:"""
         
         # 1. Component/Class Analysis Template
         if self._is_component_or_class_query(query_lower):
-            entity_name = self._extract_entity_name(user_query, detected_framework)
+            entity_name = self._get_entity_name(user_query, detected_framework)
             return f"""Analyze the {self.framework_detector.get_entity_type(detected_framework)} '{entity_name}' with comprehensive technical depth for {detected_framework}:
 
 1. GLOBAL CONTEXT: Explain the {self.framework_detector.get_entity_type(detected_framework)}'s role in the entire application ecosystem
@@ -273,7 +271,7 @@ Focus on {detected_framework}-specific patterns and actionable insights for deve
 
         # 2. Function/Method Analysis Template
         elif self._is_function_or_method_query(query_lower):
-            function_info = self._extract_function_info(user_query)
+            function_info = self._get_function_info(user_query)
             return f"""Provide deep technical analysis of the {self.framework_detector.get_function_keyword(detected_framework)} '{function_info.get('function', 'target function')}' in {detected_framework}:
 
 1. SIGNATURE ANALYSIS: Parameters, return types, and call patterns
@@ -298,7 +296,7 @@ Provide actionable architectural insights following {detected_framework} convent
 
         # 4. Search/Discovery Template
         elif self._is_search_query(query_lower):
-            search_term = self._extract_search_term(user_query)
+            search_term = self._get_search_term(user_query)
             return f"""Execute comprehensive {detected_framework} codebase search for '{search_term}':
 
 1. FILE DISCOVERY: Locate all files containing the search term with relevance ranking
@@ -321,8 +319,8 @@ Deliver search results with {detected_framework}-specific context and technical 
 
 Focus on delivering practical value for {detected_framework} software development."""
     
-    def _analyze_with_engineered_prompt(self, engineered_prompt, codebase_context):
-        """STEP 2: Execute code analysis with engineered prompt"""
+    def _check_with_engineered_prompt(self, engineered_prompt, codebase_context):
+
         try:
             if not self.code_model or not self.code_tokenizer:
                 print("⚠️ Code analysis model not available, using framework-agnostic analysis")
@@ -334,8 +332,7 @@ Focus on delivering practical value for {detected_framework} software developmen
             if 'architecture' in engineered_prompt.lower():
                 # For architecture queries, we need a comprehensive view
                 context_lines = codebase_context.split('\n')
-                
-                # Extract directory structure
+# Might need cleanup
                 file_paths = []
                 current_file = None
                 for line in context_lines:
@@ -435,7 +432,7 @@ ANALYSIS:"""
                 with open("deepseek_prompt_debug.txt", "w", encoding="utf-8") as f:
                     f.write("=== EXACT PROMPT SENT TO DEEPSEEK ===\n\n")
                     f.write(full_prompt)
-                print("🔍 DEBUG: Exact prompt saved to deepseek_prompt_debug.txt")
+                print("
             except Exception as debug_error:
                 print(f"⚠️ Debug logging failed: {debug_error}")
             
@@ -480,7 +477,7 @@ ANALYSIS:"""
     # QUERY TYPE DETECTION (Framework Agnostic) - Keep these in main class for template prompts
     
     def _is_component_or_class_query(self, query_lower):
-        """Detect if query is asking about a component/class/entity"""
+
         entity_indicators = ['component', 'class', 'struct', 'interface', 'module', 'service', 'controller']
         action_words = ['explain', 'analyze', 'show', 'describe', 'what is', 'how does', 'teach', 'guide']
         
@@ -488,17 +485,17 @@ ANALYSIS:"""
                 any(action in query_lower for action in action_words))
     
     def _is_function_or_method_query(self, query_lower):
-        """Detect if query is asking about a function/method"""
+
         return (any(keyword in query_lower for keyword in ['function', 'method', 'func', 'def']) or 
                 'from' in query_lower and any(word in query_lower for word in ['explain', 'show', 'analyze']))
     
     def _is_search_query(self, query_lower):
-        """Detect if query is a search request"""
+
         search_words = ['find', 'search', 'list', 'show all', 'locate']
         return any(word in query_lower for word in search_words)
     
-    def _extract_entity_name(self, query, framework):
-        """Extract entity name from query (component/class/struct/etc.)"""
+    def _get_entity_name(self, query, framework):
+
         words = query.split()
         
         # Look for word before entity type keywords
@@ -520,8 +517,8 @@ ANALYSIS:"""
         
         return None
     
-    def _extract_function_info(self, query):
-        """Extract function information from query"""
+    def _get_function_info(self, query):
+
         if 'from' in query:
             parts = query.split('from')
             if len(parts) == 2:
@@ -533,15 +530,15 @@ ANALYSIS:"""
         
         return None
     
-    def _extract_search_term(self, query):
-        """Extract search term from query"""
+    def _get_search_term(self, query):
+
         search_words = ['find', 'search', 'list', 'show', 'all', 'locate', 'get']
         words = query.split()
         filtered_words = [word for word in words if word.lower() not in search_words]
         return ' '.join(filtered_words) if filtered_words else None
     
     def cleanup(self):
-        """Cleanup model resources"""
+
         if hasattr(self, 'prompt_model') and self.prompt_model:
             del self.prompt_model
         if hasattr(self, 'code_model') and self.code_model:

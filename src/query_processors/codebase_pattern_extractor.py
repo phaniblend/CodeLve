@@ -10,9 +10,10 @@ from pathlib import Path
 
 
 class CodebasePatternExtractor:
-    """Extract and learn patterns from existing codebase for intelligent code generation"""
+
     
     def __init__(self, consolidated_code: str):
+    # TODO: revisit this later
         self.consolidated_code = consolidated_code
         self.patterns = {
             'component_patterns': {},
@@ -23,24 +24,23 @@ class CodebasePatternExtractor:
             'test_patterns': {},
             'file_structure': {}
         }
-        self._extract_all_patterns()
+        self._get_all_patterns()
     
-    def _extract_all_patterns(self):
-        """Extract all patterns from the codebase"""
-        self._extract_component_patterns()
-        self._extract_import_patterns()
-        self._extract_state_management_patterns()
-        self._extract_styling_patterns()
-        self._extract_api_patterns()
-        self._extract_test_patterns()
-        self._analyze_file_structure()
+    def _get_all_patterns(self):
+
+        self._get_component_patterns()
+        self._get_import_patterns()
+        self._get_state_management_patterns()
+        self._get_styling_patterns()
+        self._get_api_patterns()
+        self._get_test_patterns()
+        self._check_file_structure()
     
-    def _extract_component_patterns(self):
-        """Extract React/Vue/Angular component patterns"""
+    def _get_component_patterns(self):
+
         # React Function Component Pattern
         react_fc_pattern = r'(?:export\s+)?(?:const|function)\s+(\w+)(?::\s*React\.FC.*?)?\s*=\s*\([^)]*\)\s*(?:=>\s*)?{\s*\n((?:.*\n)*?)^}'
-        
-        # Extract all components
+# Might need cleanup
         components = []
         for match in re.finditer(react_fc_pattern, self.consolidated_code, re.MULTILINE):
             component_name = match.group(1)
@@ -49,9 +49,9 @@ class CodebasePatternExtractor:
             components.append({
                 'name': component_name,
                 'body': component_body,
-                'hooks': self._extract_hooks(component_body),
-                'props': self._extract_props(component_body),
-                'imports': self._extract_component_imports(component_body)
+                'hooks': self._get_hooks(component_body),
+                'props': self._get_props(component_body),
+                'imports': self._get_component_imports(component_body)
             })
         
         # Analyze patterns
@@ -59,17 +59,17 @@ class CodebasePatternExtractor:
             self.patterns['component_patterns'] = {
                 'style': self._detect_component_style(components),
                 'common_hooks': self._find_common_hooks(components),
-                'prop_patterns': self._analyze_prop_patterns(components),
-                'structure': self._analyze_component_structure(components)
+                'prop_patterns': self._check_prop_patterns(components),
+                'structure': self._check_component_structure(components)
             }
     
-    def _extract_hooks(self, component_body: str) -> List[str]:
-        """Extract React hooks used in component"""
+    def _get_hooks(self, component_body: str) -> List[str]:
+
         hook_pattern = r'(use\w+)\s*\('
         return list(set(re.findall(hook_pattern, component_body)))
     
-    def _extract_props(self, component_body: str) -> Dict[str, Any]:
-        """Extract component props pattern"""
+    def _get_props(self, component_body: str) -> Dict[str, Any]:
+
         # TypeScript interface pattern
         interface_pattern = r'interface\s+\w*Props\s*{\s*((?:[^}])*)\s*}'
         match = re.search(interface_pattern, component_body)
@@ -83,13 +83,13 @@ class CodebasePatternExtractor:
             return props
         return {}
     
-    def _extract_component_imports(self, component_body: str) -> List[str]:
-        """Extract imports used in a component"""
+    def _get_component_imports(self, component_body: str) -> List[str]:
+
         import_pattern = r'^import\s+.*?;$'
         return re.findall(import_pattern, component_body, re.MULTILINE)
     
     def _detect_component_style(self, components: List[Dict]) -> str:
-        """Detect the dominant component style"""
+
         functional_count = 0
         class_count = 0
         
@@ -102,19 +102,18 @@ class CodebasePatternExtractor:
         return 'functional' if functional_count >= class_count else 'class'
     
     def _find_common_hooks(self, components: List[Dict]) -> List[str]:
-        """Find commonly used hooks across components"""
+
         hook_counts = defaultdict(int)
         
         for comp in components:
             for hook in comp.get('hooks', []):
                 hook_counts[hook] += 1
-        
-        # Return hooks used in more than 30% of components
+# Works, but could be neater
         threshold = len(components) * 0.3
         return [hook for hook, count in hook_counts.items() if count >= threshold]
     
-    def _analyze_prop_patterns(self, components: List[Dict]) -> Dict:
-        """Analyze common prop patterns"""
+    def _check_prop_patterns(self, components: List[Dict]) -> Dict:
+
         all_props = defaultdict(list)
         
         for comp in components:
@@ -132,8 +131,8 @@ class CodebasePatternExtractor:
         
         return {'common': list(common_props.keys()), 'types': common_props}
     
-    def _analyze_component_structure(self, components: List[Dict]) -> Dict:
-        """Analyze common component structure patterns"""
+    def _check_component_structure(self, components: List[Dict]) -> Dict:
+
         structure_patterns = {
             'uses_loading_state': 0,
             'uses_error_handling': 0,
@@ -159,8 +158,8 @@ class CodebasePatternExtractor:
         
         return structure_patterns
     
-    def _extract_import_patterns(self):
-        """Extract import patterns used across the codebase"""
+    def _get_import_patterns(self):
+
         import_groups = defaultdict(list)
         
         # Find all imports
@@ -187,12 +186,12 @@ class CodebasePatternExtractor:
         }
     
     def _detect_import_order(self) -> List[str]:
-        """Detect the order of import groups"""
+
         # Simple detection - can be enhanced
         return ['external', 'framework', 'scoped', 'local']
     
     def _find_common_imports(self, import_groups: Dict) -> List[str]:
-        """Find the most common imports"""
+
         all_imports = []
         for group_imports in import_groups.values():
             all_imports.extend(group_imports)
@@ -203,13 +202,12 @@ class CodebasePatternExtractor:
             # Normalize import
             normalized = re.sub(r'\s+', ' ', imp).strip()
             import_counts[normalized] += 1
-        
-        # Return top 10 most common
+# Works, but could be neater
         sorted_imports = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)
         return [imp[0] for imp in sorted_imports[:10]]
     
-    def _extract_state_management_patterns(self):
-        """Extract state management patterns (Redux, Context, MobX, etc.)"""
+    def _get_state_management_patterns(self):
+
         patterns = {
             'redux': False,
             'context': False,
@@ -217,34 +215,31 @@ class CodebasePatternExtractor:
             'zustand': False,
             'local_state': False
         }
-        
-        # Check for Redux
+# Not the cleanest, but it does the job
         if 'useSelector' in self.consolidated_code or 'useDispatch' in self.consolidated_code:
             patterns['redux'] = True
-            patterns['redux_patterns'] = self._extract_redux_patterns()
-        
-        # Check for Context API
+            patterns['redux_patterns'] = self._get_redux_patterns()
+# Not the cleanest, but it does the job
         if 'useContext' in self.consolidated_code or 'createContext' in self.consolidated_code:
             patterns['context'] = True
-            patterns['context_patterns'] = self._extract_context_patterns()
-        
-        # Check for local state
+            patterns['context_patterns'] = self._get_context_patterns()
+# FIXME: refactor when time permits
         if 'useState' in self.consolidated_code:
             patterns['local_state'] = True
-            patterns['state_patterns'] = self._extract_state_patterns()
+            patterns['state_patterns'] = self._get_state_patterns()
         
         self.patterns['state_patterns'] = patterns
     
-    def _extract_redux_patterns(self) -> Dict:
-        """Extract Redux-specific patterns"""
+    def _get_redux_patterns(self) -> Dict:
+
         return {
             'uses_toolkit': '@reduxjs/toolkit' in self.consolidated_code,
             'uses_thunk': 'redux-thunk' in self.consolidated_code,
             'uses_saga': 'redux-saga' in self.consolidated_code
         }
     
-    def _extract_context_patterns(self) -> Dict:
-        """Extract Context API patterns"""
+    def _get_context_patterns(self) -> Dict:
+
         context_pattern = r'const\s+(\w+Context)\s*=\s*(?:React\.)?createContext'
         contexts = re.findall(context_pattern, self.consolidated_code)
         
@@ -253,8 +248,8 @@ class CodebasePatternExtractor:
             'count': len(contexts)
         }
     
-    def _extract_state_patterns(self) -> Dict:
-        """Extract local state patterns"""
+    def _get_state_patterns(self) -> Dict:
+
         state_pattern = r'const\s*\[(\w+),\s*set\w+\]\s*=\s*useState'
         state_vars = re.findall(state_pattern, self.consolidated_code)
         
@@ -281,14 +276,13 @@ class CodebasePatternExtractor:
         
         return categories
     
-    def _extract_styling_patterns(self):
-        """Extract styling patterns (CSS modules, styled-components, Tailwind, etc.)"""
+    def _get_styling_patterns(self):
+
         patterns = {
             'method': 'unknown',
             'libraries': []
         }
-        
-        # Check for different styling methods
+# Not the cleanest, but it does the job
         if 'styled-components' in self.consolidated_code or 'styled.' in self.consolidated_code:
             patterns['method'] = 'styled-components'
             patterns['libraries'].append('styled-components')
@@ -300,14 +294,13 @@ class CodebasePatternExtractor:
         elif 'makeStyles' in self.consolidated_code or '@mui' in self.consolidated_code:
             patterns['method'] = 'material-ui'
             patterns['libraries'].append('@mui/material')
-        
-        # Extract className patterns
-        patterns['className_patterns'] = self._extract_className_patterns()
+# FIXME: refactor when time permits
+        patterns['className_patterns'] = self._get_className_patterns()
         
         self.patterns['styling_patterns'] = patterns
     
-    def _extract_className_patterns(self) -> List[str]:
-        """Extract common className patterns"""
+    def _get_className_patterns(self) -> List[str]:
+
         className_pattern = r'className=["\']([^"\']+)["\']'
         classNames = re.findall(className_pattern, self.consolidated_code)
         
@@ -315,44 +308,39 @@ class CodebasePatternExtractor:
         className_counts = defaultdict(int)
         for cn in classNames:
             className_counts[cn] += 1
-        
-        # Return top 20 most common
+# Might need cleanup
         sorted_classes = sorted(className_counts.items(), key=lambda x: x[1], reverse=True)
         return [cls[0] for cls in sorted_classes[:20]]
     
-    def _extract_api_patterns(self):
-        """Extract API call patterns"""
+    def _get_api_patterns(self):
+
         patterns = {
             'method': 'unknown',
             'libraries': [],
             'patterns': []
         }
-        
-        # Check for axios
+# Might need cleanup
         if 'axios' in self.consolidated_code:
             patterns['method'] = 'axios'
             patterns['libraries'].append('axios')
-            patterns['patterns'] = self._extract_axios_patterns()
-        
-        # Check for fetch
+            patterns['patterns'] = self._get_axios_patterns()
+# Not the cleanest, but it does the job
         elif 'fetch(' in self.consolidated_code:
             patterns['method'] = 'fetch'
-            patterns['patterns'] = self._extract_fetch_patterns()
-        
-        # Extract API service patterns
-        patterns['service_patterns'] = self._extract_service_patterns()
+            patterns['patterns'] = self._get_fetch_patterns()
+# FIXME: refactor when time permits
+        patterns['service_patterns'] = self._get_service_patterns()
         
         self.patterns['api_patterns'] = patterns
     
-    def _extract_axios_patterns(self) -> Dict:
-        """Extract axios-specific patterns"""
+    def _get_axios_patterns(self) -> Dict:
+
         patterns = {
             'uses_interceptors': 'interceptors' in self.consolidated_code,
             'uses_instance': 'axios.create' in self.consolidated_code,
             'common_configs': []
         }
-        
-        # Extract common axios configurations
+# Not the cleanest, but it does the job
         config_pattern = r'axios\.create\(\{([^}]+)\}'
         configs = re.findall(config_pattern, self.consolidated_code, re.DOTALL)
         
@@ -366,15 +354,14 @@ class CodebasePatternExtractor:
         
         return patterns
     
-    def _extract_fetch_patterns(self) -> Dict:
-        """Extract fetch API patterns"""
+    def _get_fetch_patterns(self) -> Dict:
+
         patterns = {
             'uses_async_await': 'async' in self.consolidated_code and 'await fetch' in self.consolidated_code,
             'uses_then_catch': '.then(' in self.consolidated_code and 'fetch(' in self.consolidated_code,
             'common_options': []
         }
-        
-        # Extract common fetch options
+# FIXME: refactor when time permits
         fetch_pattern = r'fetch\([^,]+,\s*\{([^}]+)\}'
         options = re.findall(fetch_pattern, self.consolidated_code, re.DOTALL)
         
@@ -388,35 +375,33 @@ class CodebasePatternExtractor:
         
         return patterns
     
-    def _extract_service_patterns(self) -> List[str]:
-        """Extract API service patterns"""
+    def _get_service_patterns(self) -> List[str]:
+
         service_pattern = r'class\s+(\w*Service)\s*{'
         services = re.findall(service_pattern, self.consolidated_code)
         
         return services
     
-    def _extract_test_patterns(self):
-        """Extract testing patterns"""
+    def _get_test_patterns(self):
+
         patterns = {
             'framework': 'unknown',
             'patterns': []
         }
-        
-        # Detect testing framework
+# Might need cleanup
         if 'describe(' in self.consolidated_code and 'it(' in self.consolidated_code:
             patterns['framework'] = 'jest'
         elif 'test(' in self.consolidated_code:
             patterns['framework'] = 'jest'
         elif '@testing-library' in self.consolidated_code:
             patterns['framework'] = 'react-testing-library'
-        
-        # Extract test structure patterns
-        patterns['structure'] = self._extract_test_structure()
+# Not the cleanest, but it does the job
+        patterns['structure'] = self._get_test_structure()
         
         self.patterns['test_patterns'] = patterns
     
-    def _extract_test_structure(self) -> Dict:
-        """Extract common test structure patterns"""
+    def _get_test_structure(self) -> Dict:
+
         structure = {
             'uses_describe_blocks': 'describe(' in self.consolidated_code,
             'uses_beforeEach': 'beforeEach(' in self.consolidated_code,
@@ -426,8 +411,8 @@ class CodebasePatternExtractor:
         
         return structure
     
-    def _analyze_file_structure(self):
-        """Analyze file and folder structure patterns"""
+    def _check_file_structure(self):
+
         file_pattern = r'#\s*File:\s*([^\n]+)'
         files = re.findall(file_pattern, self.consolidated_code)
         
@@ -438,12 +423,11 @@ class CodebasePatternExtractor:
         }
         
         for file_path in files:
-            # Extract file extension
+# Not the cleanest, but it does the job
             if '.' in file_path:
                 ext = file_path.split('.')[-1]
                 structure['file_types'][ext] += 1
-            
-            # Extract folder structure
+# FIXME: refactor when time permits
             parts = file_path.split('/')
             if len(parts) > 1:
                 folder = '/'.join(parts[:-1])
@@ -452,16 +436,16 @@ class CodebasePatternExtractor:
         self.patterns['file_structure'] = dict(structure)
     
     def get_component_template(self, component_type: str = 'default') -> str:
-        """Get component template based on extracted patterns"""
+
         # This will be used by the code generator
         return self._build_component_template(component_type)
     
     def get_import_template(self, imports_needed: List[Dict]) -> str:
-        """Get properly ordered imports based on project patterns"""
+
         return self._build_import_template(imports_needed)
     
     def _build_component_template(self, component_type: str) -> str:
-        """Build a component template based on patterns"""
+
         # This is a simplified version - can be enhanced
         style = self.patterns['component_patterns'].get('style', 'functional')
         
@@ -488,7 +472,7 @@ class CodebasePatternExtractor:
         return template
     
     def _build_import_template(self, imports_needed: List[Dict]) -> str:
-        """Build import statements following project patterns"""
+
         import_lines = []
         
         # Group imports by type

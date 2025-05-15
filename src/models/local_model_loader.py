@@ -16,9 +16,10 @@ from typing import Tuple, Optional
 
 
 class LocalModelLoader:
-    """Load CodeT5+ from local files"""
+
     
     def __init__(self, models_dir: str = None):
+    # Not the cleanest, but it does the job
         self.logger = logging.getLogger(__name__)
         
         # Set models directory
@@ -36,7 +37,7 @@ class LocalModelLoader:
         self._verify_model_files()
     
     def _verify_model_files(self):
-        """Verify all required model files exist"""
+
         required_files = {
             "codet5p-770m": [
                 "pytorch_model.bin",
@@ -60,7 +61,7 @@ class LocalModelLoader:
                     self.logger.info(f"✓ Found: {file}")
     
     def load_codet5_model(self) -> Tuple[T5ForConditionalGeneration, AutoTokenizer]:
-        """Load CodeT5+ model from local files"""
+
         try:
             self.logger.info(f"Loading CodeT5+ from {self.codet5_path}")
             
@@ -95,7 +96,7 @@ class LocalModelLoader:
             raise
     
     def load_dialogpt_model(self) -> Optional[Tuple]:
-        """Load DialoGPT model (download if needed)"""
+
         try:
             # First try local
             if self.dialogpt_path.exists():
@@ -139,7 +140,7 @@ class LocalModelLoader:
             return None
     
     def save_dialogpt_model(self, model, tokenizer):
-        """Save DialoGPT locally for future use"""
+
         try:
             self.dialogpt_path.mkdir(parents=True, exist_ok=True)
             model.save_pretrained(str(self.dialogpt_path))
@@ -149,7 +150,7 @@ class LocalModelLoader:
             self.logger.warning(f"Could not save DialoGPT: {e}")
     
     def get_model_info(self):
-        """Get information about available models"""
+
         info = {
             "models_directory": str(self.models_dir),
             "codet5_available": self.codet5_path.exists(),
@@ -168,7 +169,7 @@ class LocalModelLoader:
 
 # Convenience function for testing
 def test_local_loader():
-    """Test the local model loader"""
+
     logging.basicConfig(level=logging.INFO)
     
     loader = LocalModelLoader()
@@ -207,7 +208,7 @@ def test_local_loader():
             print(f"Generated: {result}")
             
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n
         import traceback
         traceback.print_exc()
 

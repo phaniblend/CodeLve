@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class DualLLMHandler:
     def __init__(self):
+    # Quick workaround for now
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Using device: {self.device}")
         
@@ -61,7 +62,7 @@ class DualLLMHandler:
         }
         
     def load_models(self):
-        """Load both LLM models"""
+
         try:
             # Load DialoGPT for prompt engineering
             logger.info(f"Loading DialoGPT from {self.dialogpt_path}")
@@ -96,7 +97,7 @@ class DualLLMHandler:
         Returns: (engineered_prompt, query_type)
         """
         try:
-            # Detect query type
+# Works, but could be neater
             query_type = self._detect_query_type(user_query)
             
             # Create context for DialoGPT
@@ -134,7 +135,7 @@ class DualLLMHandler:
             return self._apply_template(user_query, query_type, context), query_type
     
     def generate_code(self, engineered_prompt: str, max_length: int = 512) -> str:
-        """Generate code using CodeT5+ with the engineered prompt"""
+
         try:
             # Prepare input for CodeT5+
             inputs = self.codet5_tokenizer(
@@ -169,9 +170,7 @@ class DualLLMHandler:
             return f"# Error generating code: {str(e)}"
     
     def process_query(self, user_query: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Main entry point for processing queries with dual LLM system
-        """
+
         try:
             # Ensure models are loaded
             if self.dialogpt_model is None or self.codet5_model is None:
@@ -212,7 +211,7 @@ class DualLLMHandler:
             }
     
     def _detect_query_type(self, query: str) -> str:
-        """Detect the type of query"""
+
         query_lower = query.lower()
         
         if any(word in query_lower for word in ["generate", "create", "write", "build", "make"]):
@@ -229,7 +228,7 @@ class DualLLMHandler:
             return "general"
     
     def _apply_template(self, query: str, query_type: str, context: Dict[str, Any]) -> str:
-        """Apply template-based prompt engineering"""
+
         if query_type not in self.prompt_templates:
             return query
         
@@ -237,8 +236,8 @@ class DualLLMHandler:
         fallback = self.prompt_templates[query_type]["fallback"]
         
         try:
-            # Extract parameters from query and context
-            params = self._extract_template_params(query, context, query_type)
+# FIXME: refactor when time permits
+            params = self._get_template_params(query, context, query_type)
             
             # Try to fill template
             if all(param in params for param in re.findall(r'{(\w+)}', template)):
@@ -251,8 +250,8 @@ class DualLLMHandler:
         except:
             return query
     
-    def _extract_template_params(self, query: str, context: Dict[str, Any], query_type: str) -> Dict[str, str]:
-        """Extract parameters for template filling"""
+    def _get_template_params(self, query: str, context: Dict[str, Any], query_type: str) -> Dict[str, str]:
+
         params = {}
         
         # Common extractions
@@ -272,8 +271,8 @@ class DualLLMHandler:
             params["patterns"] = context.get("patterns", "project conventions")
             
         elif query_type == "explanation":
-            # Extract component name
-            params["component"] = self._extract_component_name(query)
+# Not the cleanest, but it does the job
+            params["component"] = self._get_component_name(query)
             params["aspects"] = "implementation, purpose, and usage"
             params["relationships"] = context.get("relationships", "related components")
             
@@ -281,8 +280,8 @@ class DualLLMHandler:
         
         return params
     
-    def _extract_component_name(self, query: str) -> str:
-        """Extract component name from query"""
+    def _get_component_name(self, query: str) -> str:
+
         # Simple extraction - can be enhanced
         words = query.split()
         for i, word in enumerate(words):
@@ -291,7 +290,7 @@ class DualLLMHandler:
         return "the component"
     
     def _is_valid_prompt(self, prompt: str) -> bool:
-        """Check if engineered prompt is valid"""
+
         if len(prompt) < 20:
             return False
         if prompt.count(' ') < 3:
@@ -299,7 +298,7 @@ class DualLLMHandler:
         return True
     
     def _post_process_code(self, code: str) -> str:
-        """Post-process generated code"""
+
         # Remove any explanation text before code
         lines = code.split('\n')
         code_started = False
@@ -318,7 +317,7 @@ class DualLLMHandler:
         return '\n'.join(processed_lines) if processed_lines else code
     
     def _generate_explanation(self, prompt: str) -> str:
-        """Generate explanation using CodeT5+"""
+
         try:
             # Modify prompt for explanation
             explanation_prompt = f"Explain: {prompt}"

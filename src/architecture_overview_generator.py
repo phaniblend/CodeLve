@@ -6,16 +6,16 @@ Generates business-focused system overviews for new developers
 from pathlib import Path
 
 class ArchitectureOverviewGenerator:
-    """Generate business-focused architecture overviews"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
     
     def generate_system_overview(self, index_data, framework, codebase_context):
-        """Generate a comprehensive system overview for new developers"""
+
         
         # Analyze the system's business domain
-        domain_info = self._analyze_business_domain(codebase_context, index_data)
+        domain_info = self._check_business_domain(codebase_context, index_data)
         
         # Identify main functional areas
         functional_areas = self._identify_functional_areas(index_data['modules'], codebase_context)
@@ -24,7 +24,7 @@ class ArchitectureOverviewGenerator:
         component_mapping = self._map_components_to_business(functional_areas, index_data)
         
         # Generate the overview
-        overview = f"""# 🎯 **System Overview: {domain_info['system_name']}**
+        overview = f"""
 
 ## 📋 **What This System Does**
 {domain_info['description']}
@@ -78,9 +78,9 @@ User Action → Page Component → API Service → Backend → Response → UI U
 4. Response updates Redux store
 5. UI reflects new equipment in list
 
-## 💡 **Key Technical Decisions**
 
-{self._analyze_technical_decisions(codebase_context, framework)}
+
+{self._check_technical_decisions(codebase_context, framework)}
 
 ## 🎓 **Learning Path for This Codebase**
 
@@ -101,16 +101,15 @@ User Action → Page Component → API Service → Backend → Response → UI U
 
 ---
 
-**🎯 Remember**: This is an {domain_info['industry']} system. Understanding the business context is as important as the technical implementation.
+
 """
         
         return overview
     
-    def _analyze_business_domain(self, codebase_context, index_data):
-        """Analyze the business domain from code patterns"""
+    def _check_business_domain(self, codebase_context, index_data):
+
         content_lower = codebase_context.lower()
-        
-        # Detect domain based on common terms
+# TODO: revisit this later
         domain_info = {
             'system_name': 'System',
             'description': '',
@@ -183,8 +182,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
                 'Accounts', 'Transactions', 'Payments', 'Reports', 
                 'Compliance', 'Balances', 'Statements'
             ]
-        
-        # Extract more specific concepts from module names
+# Might need cleanup
         for module_name in index_data['modules']:
             module_lower = module_name.lower()
             
@@ -204,7 +202,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         return domain_info
     
     def _identify_functional_areas(self, modules, codebase_context):
-        """Identify main functional areas of the system"""
+
         functional_areas = {}
         
         # Analyze module names and group by function
@@ -289,7 +287,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         return functional_areas
     
     def _generate_system_map(self, functional_areas):
-        """Generate ASCII system map based on detected functional areas"""
+
         
         # Default map for environmental compliance system
         if 'Equipment Management' in functional_areas and 'Grant Management' in functional_areas:
@@ -325,7 +323,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
 └─────────────────────────────────────────────────────────────────┘"""
     
     def _format_user_journeys(self, functional_areas):
-        """Format main user journeys based on functional areas"""
+
         journeys = []
         
         if 'Applicant Management' in functional_areas:
@@ -349,7 +347,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
    - **Start at**: `components/pages/User/` or `auth/`""")
         
         if 'Dashboard & Analytics' in functional_areas:
-            journeys.append("""   **📊 Analytics Journey**
+            journeys.append("""   
    - Login → View Dashboard → Analyze Metrics → Generate Reports
    - **Start at**: `components/pages/Dashboard/`""")
         
@@ -362,7 +360,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         return '\n\n'.join(journeys)
     
     def _format_component_guide(self, component_mapping):
-        """Format component guide by business function"""
+
         guide_lines = []
         
         for function, components in component_mapping.items():
@@ -376,7 +374,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         return '\n'.join(guide_lines)
     
     def _map_components_to_business(self, functional_areas, index_data):
-        """Map technical components to business functions"""
+
         mapping = {}
         
         for area_name, area_info in functional_areas.items():
@@ -396,7 +394,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         return mapping
     
     def _infer_component_purpose(self, module_name, module_info):
-        """Infer the purpose of a component from its name and content"""
+
         name_lower = module_name.lower()
         
         # Service layer components
@@ -448,7 +446,7 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
             return "Specialized component functionality"
     
     def _format_directory_guide(self, functional_areas, index_data):
-        """Format directory guide by business function"""
+
         guide = []
         
         # Group files by directory
@@ -491,8 +489,8 @@ implementing grant programs (Carl Moyer, Community Air Protection), and ensuring
         
         return '\n'.join(guide)
     
-    def _analyze_technical_decisions(self, codebase_context, framework):
-        """Analyze and explain key technical decisions"""
+    def _check_technical_decisions(self, codebase_context, framework):
+
         decisions = []
         content_lower = codebase_context.lower()
         

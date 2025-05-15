@@ -9,17 +9,18 @@ from collections import defaultdict
 
 
 class DiagramGenerator:
-    """Handles diagram generation from codebase analysis."""
+
     
     def __init__(self, consolidated_code: str):
+    # FIXME: refactor when time permits
         self.consolidated_code = consolidated_code
-        self.modules = self._extract_modules()
-        self.dependencies = self._analyze_dependencies()
-        self.classes = self._extract_classes()
-        self.functions = self._extract_functions()
+        self.modules = self._get_modules()
+        self.dependencies = self._check_dependencies()
+        self.classes = self._get_classes()
+        self.functions = self._get_functions()
     
-    def _extract_modules(self) -> Dict[str, List[str]]:
-        """Extract module structure from the codebase."""
+    def _get_modules(self) -> Dict[str, List[str]]:
+
         modules = defaultdict(list)
         
         # Pattern to match file headers
@@ -36,8 +37,8 @@ class DiagramGenerator:
         
         return dict(modules)
     
-    def _analyze_dependencies(self) -> Dict[str, Set[str]]:
-        """Analyze import dependencies between modules."""
+    def _check_dependencies(self) -> Dict[str, Set[str]]:
+
         dependencies = defaultdict(set)
         
         import_pattern = r'(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))'
@@ -51,8 +52,8 @@ class DiagramGenerator:
         
         return dict(dependencies)
     
-    def _extract_classes(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Extract class information from the codebase."""
+    def _get_classes(self) -> Dict[str, List[Dict[str, Any]]]:
+
         classes = defaultdict(list)
         
         class_pattern = r'class\s+(\w+)(?:\((.*?)\))?:\s*\n((?:\s{4,}.*\n)*)'
@@ -63,23 +64,23 @@ class DiagramGenerator:
                 class_info = {
                     'name': match.group(1),
                     'base_classes': [b.strip() for b in match.group(2).split(',')] if match.group(2) else [],
-                    'methods': self._extract_class_methods(match.group(3)),
+                    'methods': self._get_class_methods(match.group(3)),
                     'module': module
                 }
                 classes[module].append(class_info)
         
         return dict(classes)
     
-    def _extract_class_methods(self, class_body: str) -> List[str]:
-        """Extract method names from a class body."""
+    def _get_class_methods(self, class_body: str) -> List[str]:
+
         methods = []
         method_pattern = r'def\s+(\w+)\s*\('
         for match in re.finditer(method_pattern, class_body):
             methods.append(match.group(1))
         return methods
     
-    def _extract_functions(self) -> Dict[str, List[str]]:
-        """Extract standalone functions from modules."""
+    def _get_functions(self) -> Dict[str, List[str]]:
+
         functions = defaultdict(list)
         
         # Pattern for top-level functions
@@ -94,7 +95,7 @@ class DiagramGenerator:
         return dict(functions)
     
     def generate_architecture_diagram(self) -> str:
-        """Generate a high-level architecture diagram."""
+
         mermaid_code = "graph TB\n"
         mermaid_code += "    %% Architecture Overview\n\n"
         
@@ -128,7 +129,7 @@ class DiagramGenerator:
         return mermaid_code
     
     def _categorize_modules(self) -> Dict[str, List[str]]:
-        """Categorize modules by their type/purpose."""
+
         categories = defaultdict(list)
         
         for module in self.modules.keys():
@@ -148,7 +149,7 @@ class DiagramGenerator:
         return dict(categories)
     
     def generate_dependency_graph(self, module_name: Optional[str] = None) -> str:
-        """Generate a dependency graph for a specific module or the entire system."""
+
         mermaid_code = "graph LR\n"
         mermaid_code += "    %% Dependency Graph\n\n"
         
@@ -183,11 +184,11 @@ class DiagramGenerator:
         return mermaid_code
     
     def _get_module_dependencies(self, module_name: str) -> Set[str]:
-        """Get all dependencies of a module."""
+
         return self.dependencies.get(module_name, set())
     
     def _get_module_dependents(self, module_name: str) -> Set[str]:
-        """Get all modules that depend on the given module."""
+
         dependents = set()
         for module, deps in self.dependencies.items():
             if module_name in deps or any(dep.startswith(module_name) for dep in deps):
@@ -195,7 +196,7 @@ class DiagramGenerator:
         return dependents
     
     def generate_class_diagram(self, module_name: Optional[str] = None) -> str:
-        """Generate a class diagram for a module or the entire system."""
+
         mermaid_code = "classDiagram\n"
         mermaid_code += "    %% Class Diagram\n\n"
         
@@ -225,14 +226,14 @@ class DiagramGenerator:
                         mermaid_code += f"    {base_class} <|-- {class_name}\n"
         
         # Add associations based on method calls and attributes
-        associations = self._analyze_class_associations()
+        associations = self._check_class_associations()
         for (class1, class2), relationship in associations.items():
             mermaid_code += f"    {class1} --> {class2} : {relationship}\n"
         
         return mermaid_code
     
-    def _analyze_class_associations(self) -> Dict[Tuple[str, str], str]:
-        """Analyze associations between classes."""
+    def _check_class_associations(self) -> Dict[Tuple[str, str], str]:
+
         associations = {}
         
         # Simple pattern matching for class instantiation and usage
@@ -262,13 +263,13 @@ class DiagramGenerator:
         return associations
     
     def _get_method_body(self, code: str, class_name: str, method_name: str) -> str:
-        """Extract method body from code."""
+
         pattern = rf'class\s+{class_name}.*?def\s+{method_name}\s*\([^)]*\):\s*\n((?:\s{{4,}}.*\n)*)'
         match = re.search(pattern, code, re.DOTALL)
         return match.group(1) if match else ""
     
     def generate_sequence_diagram(self, scenario: str) -> str:
-        """Generate a sequence diagram for a specific scenario."""
+
         mermaid_code = "sequenceDiagram\n"
         mermaid_code += f"    %% Sequence Diagram: {scenario}\n\n"
         
@@ -282,7 +283,7 @@ class DiagramGenerator:
         mermaid_code += "\n"
         
         # Generate interactions based on scenario
-        interactions = self._analyze_sequence_interactions(scenario, participants)
+        interactions = self._check_sequence_interactions(scenario, participants)
         
         for interaction in interactions:
             mermaid_code += f"    {interaction['from']}->>+{interaction['to']}: {interaction['message']}\n"
@@ -292,7 +293,7 @@ class DiagramGenerator:
         return mermaid_code
     
     def _identify_sequence_participants(self, scenario: str) -> List[str]:
-        """Identify participants in a sequence diagram based on scenario."""
+
         participants = []
         
         # Common participants based on keywords
@@ -313,8 +314,8 @@ class DiagramGenerator:
         
         return participants
     
-    def _analyze_sequence_interactions(self, scenario: str, participants: List[str]) -> List[Dict[str, str]]:
-        """Analyze and generate sequence interactions."""
+    def _check_sequence_interactions(self, scenario: str, participants: List[str]) -> List[Dict[str, str]]:
+
         interactions = []
         
         # Generate basic interaction flow based on scenario keywords
@@ -368,18 +369,17 @@ class DiagramGenerator:
         return filtered_interactions
     
     def generate_flow_diagram(self, process_name: str) -> str:
-        """Generate a flow diagram for a specific process."""
+
         mermaid_code = "flowchart TD\n"
         mermaid_code += f"    %% Flow Diagram: {process_name}\n\n"
         
         # Analyze the process to create flow
-        flow_steps = self._analyze_process_flow(process_name)
+        flow_steps = self._check_process_flow(process_name)
         
         # Generate flow nodes and connections
         for i, step in enumerate(flow_steps):
             node_id = f"step{i}"
-            
-            # Determine node shape based on step type
+# Not the cleanest, but it does the job
             if step['type'] == 'start':
                 mermaid_code += f"    {node_id}([{step['label']}])\n"
             elif step['type'] == 'end':
@@ -411,8 +411,8 @@ class DiagramGenerator:
         
         return mermaid_code
     
-    def _analyze_process_flow(self, process_name: str) -> List[Dict[str, str]]:
-        """Analyze a process and generate flow steps."""
+    def _check_process_flow(self, process_name: str) -> List[Dict[str, str]]:
+
         steps = []
         
         # Start node

@@ -8,24 +8,23 @@ from pathlib import Path
 from .advanced_query_processor import AdvancedQueryProcessor
 
 class QueryAnalyzer:
-    """Analyze and route user queries to appropriate handlers"""
+
     
     def __init__(self, entity_analyzer, architecture_analyzer):
         self.entity_analyzer = entity_analyzer
         self.architecture_analyzer = architecture_analyzer
         self.advanced_processor = None  # Will be initialized when needed
         
-    def analyze_query(self, query, codebase_context, framework=None):
-        """Analyze query and determine appropriate response strategy"""
+    def check_query(self, query, codebase_context, framework=None):
+
         query_lower = query.lower().strip()
         
-        print(f"🔍 Analyzing query: {query}")
+        print(f"
         
         # Initialize advanced processor if needed
         if not self.advanced_processor:
             self.advanced_processor = AdvancedQueryProcessor(codebase_context)
-        
-        # Check for advanced query patterns first
+# Works, but could be neater
         response_text, response_type = self.advanced_processor.process_query(query)
         if response_type != 'help':  # 'help' is returned for general/unhandled queries
             return {
@@ -34,11 +33,10 @@ class QueryAnalyzer:
                 'framework': framework,
                 'can_enhance': False
             }
-        
-        # Check for architecture-related queries
+# Might need cleanup
         if any(keyword in query_lower for keyword in ['architecture', 'structure', 'overview', 'design', 'codebase']):
             print("🏗️ Architecture query detected")
-            architecture_result = self.architecture_analyzer.analyze_codebase_architecture(codebase_context, framework)
+            architecture_result = self.architecture_analyzer.check_codebase_architecture(codebase_context, framework)
             
             return {
                 'analysis_type': 'architecture',
@@ -47,19 +45,17 @@ class QueryAnalyzer:
                 'can_enhance': True,
                 'enhancement_prompt': self._create_architecture_enhancement_prompt(query, framework)
             }
-        
-        # Check if it's asking about a specific entity (component, class, file)
+# Might need cleanup
         if any(keyword in query_lower for keyword in ['explain', 'analyze', 'what is', 'how does', 'show me']):
-            # Extract potential entity name
-            entity_name = self._extract_entity_name(query, query_lower)
+# FIXME: refactor when time permits
+            entity_name = self._get_entity_name(query, query_lower)
             
             if entity_name:
-                print(f"🔍 Entity query detected: {entity_name}")
+                print(f"
                 
                 # Use entity analyzer
-                result = self.entity_analyzer.analyze_entity(entity_name, codebase_context, framework)
-                
-                # Check if result needs DeepSeek enhancement
+                result = self.entity_analyzer.check_entity(entity_name, codebase_context, framework)
+# Might need cleanup
                 if isinstance(result, dict) and result.get('needs_deepseek'):
                     return {
                         'analysis_type': 'entity',
@@ -78,20 +74,18 @@ class QueryAnalyzer:
                         'framework': framework,
                         'can_enhance': False
                     }
-        
-        # Check for search queries
+# Might need cleanup
         if any(keyword in query_lower for keyword in ['find', 'search', 'locate', 'where is', 'list all']):
             return self._handle_search_query(query, query_lower, codebase_context)
-        
-        # Check for specific pattern queries
+# Works, but could be neater
         if any(keyword in query_lower for keyword in ['pattern', 'best practice', 'example', 'how to']):
             return self._handle_pattern_query(query, codebase_context, framework)
         
         # Default: general query
         return self._handle_general_query(query, codebase_context, framework)
     
-    def _extract_entity_name(self, query, query_lower):
-        """Extract entity name from query while preserving file paths"""
+    def _get_entity_name(self, query, query_lower):
+
         # First, check if there's a file path in the query
         # Look for patterns like src/..., src\..., or anything with file extensions
         path_patterns = [
@@ -142,8 +136,7 @@ class QueryAnalyzer:
         return None
     
     def _handle_search_query(self, query, query_lower, codebase_context):
-        """Handle search-type queries"""
-        # Extract search term
+# TODO: revisit this later
         search_term = query_lower
         for keyword in ['find', 'search', 'locate', 'where is', 'list all']:
             search_term = search_term.replace(keyword, '').strip()
@@ -159,7 +152,7 @@ class QueryAnalyzer:
         }
     
     def _handle_pattern_query(self, query, codebase_context, framework):
-        """Handle pattern and best practice queries"""
+
         # Create a prompt for pattern analysis
         prompt = f"""Analyze the codebase and provide examples and best practices for: {query}
 
@@ -180,7 +173,7 @@ Provide specific file references and code snippets where relevant."""
         }
     
     def _handle_general_query(self, query, codebase_context, framework):
-        """Handle general queries"""
+
         # Create a general analysis prompt
         prompt = f"""Answer this question about the codebase: {query}
 
@@ -201,7 +194,7 @@ Use specific file references and code examples to support your answer."""
         }
     
     def _search_codebase(self, search_term, codebase_context):
-        """Search for term in codebase"""
+
         results = []
         lines = codebase_context.split('\n')
         current_file = ""
@@ -231,7 +224,7 @@ Use specific file references and code examples to support your answer."""
         if not results:
             return f"No results found for '{search_term}'"
         
-        formatted = f"# 🔍 Search Results for '{search_term}'\n\n"
+        formatted = f"
         formatted += f"Found {len(results)} matches:\n\n"
         
         for r in results[:10]:  # Show first 10
@@ -245,7 +238,7 @@ Use specific file references and code examples to support your answer."""
         return formatted
     
     def _create_architecture_enhancement_prompt(self, query, framework):
-        """Create enhancement prompt for architecture queries"""
+
         return f"""Provide a detailed architectural analysis for this {framework or 'codebase'} answering: {query}
 
 Focus on:
@@ -258,20 +251,18 @@ Focus on:
 Use specific examples from the actual codebase."""
     
     def route_query(self, query, codebase_context, framework=None):
-        """Main entry point for query routing with advanced query processing"""
+
         query_lower = query.lower().strip()
         
-        print(f"🔍 Analyzing query: {query}")
-        
-        # Detect framework if not provided
+        print(f"
+# Might need cleanup
         if not framework:
             framework = self.architecture_analyzer.framework_detector.detect_framework_or_language(codebase_context)
         
         # Initialize advanced processor if needed
         if not self.advanced_processor:
             self.advanced_processor = AdvancedQueryProcessor(codebase_context)
-        
-        # Check for advanced query patterns first
+# Might need cleanup
         response_text, response_type = self.advanced_processor.process_query(query)
         if response_type != 'help':  # 'help' is returned for general/unhandled queries
             print(f"✨ Advanced query type detected: {response_type}")
@@ -283,4 +274,4 @@ Use specific examples from the actual codebase."""
             }
         
         # Continue with standard routing
-        return self.analyze_query(query, codebase_context, framework)
+        return self.check_query(query, codebase_context, framework)

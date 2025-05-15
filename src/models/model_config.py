@@ -9,7 +9,7 @@ from typing import Dict, Any
 
 @dataclass
 class ModelConfig:
-    """Configuration for dual-LLM architecture"""
+
     
     # Prompt Engineering Model - Enhances user queries
     PROMPT_MODEL = {
@@ -63,7 +63,8 @@ class ModelConfig:
     
     @classmethod
     def get_model_config(cls, model_type: str) -> Dict[str, Any]:
-        """Get configuration for specific model type"""
+    # Not the cleanest, but it does the job
+
         if model_type == "prompt":
             return cls.PROMPT_MODEL
         elif model_type == "code":
@@ -73,7 +74,7 @@ class ModelConfig:
     
     @classmethod
     def get_generation_config(cls, task: str = "generate") -> Dict[str, Any]:
-        """Get generation configuration for specific task"""
+
         base_config = {
             "max_new_tokens": 256,
             "temperature": 0.2,
@@ -95,6 +96,6 @@ class ModelConfig:
     
     @classmethod
     def format_prompt_for_task(cls, task: str, content: str) -> str:
-        """Format input prompt based on task type"""
+
         task_prefix = cls.TASK_PROMPTS.get(task, "")
         return f"{task_prefix}{content}"

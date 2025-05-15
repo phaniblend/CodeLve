@@ -7,27 +7,28 @@ import re
 from pathlib import Path
 
 class OnboardingGenerator:
-    """Generate comprehensive developer onboarding guides"""
+
     
     def __init__(self, framework_detector):
+    # Works, but could be neater
         self.framework_detector = framework_detector
     
     def generate_enhanced_onboarding_guide(self, index_data, framework, codebase_context):
-        """Generate a comprehensive onboarding guide for new developers"""
+
         modules = index_data['modules']
         architecture = index_data['architecture']
         stats = index_data['stats']
         
         # Analyze the codebase to understand the project
-        project_info = self._analyze_project_info(codebase_context)
-        tech_stack = self._analyze_tech_stack(codebase_context, modules)
+        project_info = self._check_project_info(codebase_context)
+        tech_stack = self._check_tech_stack(codebase_context, modules)
         
         guide = f"""# 🚀 Enhanced Developer Onboarding Guide
 ## {project_info['project_type']}
 
 ---
 
-## 🎯 Quick Start Checklist (First Day)
+
 
 ### Prerequisites Check
 - [ ] Node.js version: {project_info.get('node_version', '14.x or higher')}
@@ -66,7 +67,7 @@ npm start  # Runs on http://localhost:3000
 
 ---
 
-## 🔍 Common Development Scenarios
+
 
 {self._generate_common_scenarios(codebase_context, framework)}
 
@@ -84,7 +85,7 @@ npm start  # Runs on http://localhost:3000
 
 ---
 
-## 📊 Project-Specific Knowledge
+
 
 {self._generate_project_knowledge(codebase_context, modules)}
 
@@ -180,8 +181,8 @@ Remember: When in doubt, find a similar working example in the codebase and adap
         
         return guide
     
-    def _analyze_project_info(self, codebase_context):
-        """Analyze project type and configuration"""
+    def _check_project_info(self, codebase_context):
+
         content_lower = codebase_context.lower()
         
         project_info = {
@@ -189,13 +190,13 @@ Remember: When in doubt, find a similar working example in the codebase and adap
             'has_typescript': '.tsx' in content_lower or '.ts' in content_lower,
             'has_tests': 'test' in content_lower or 'spec' in content_lower,
             'uses_docker': 'dockerfile' in content_lower,
-            'node_version': self._extract_node_version(codebase_context)
+            'node_version': self._get_node_version(codebase_context)
         }
         
         return project_info
     
     def _determine_project_type(self, codebase_context):
-        """Determine the type of project based on content"""
+
         content_lower = codebase_context.lower()
         
         if 'equipment' in content_lower and 'emission' in content_lower:
@@ -209,8 +210,8 @@ Remember: When in doubt, find a similar working example in the codebase and adap
         else:
             return "Enterprise Web Application"
     
-    def _extract_node_version(self, codebase_context):
-        """Extract Node.js version from package.json or .nvmrc"""
+    def _get_node_version(self, codebase_context):
+
         # Look for engines field in package.json
         if '"engines"' in codebase_context:
             match = re.search(r'"node":\s*"([^"]+)"', codebase_context)
@@ -219,7 +220,7 @@ Remember: When in doubt, find a similar working example in the codebase and adap
         return "14.x or higher"
     
     def _generate_auth_prerequisites(self, codebase_context):
-        """Generate authentication prerequisites"""
+
         content_lower = codebase_context.lower()
         auth_prereqs = []
         
@@ -233,7 +234,7 @@ Remember: When in doubt, find a similar working example in the codebase and adap
         return '\n'.join(auth_prereqs)
     
     def _generate_env_template(self, codebase_context):
-        """Generate environment variable template"""
+
         content_lower = codebase_context.lower()
         env_vars = []
         
@@ -251,7 +252,7 @@ Remember: When in doubt, find a similar working example in the codebase and adap
         return '\n'.join(env_vars) if env_vars else "# Add your environment variables here"
     
     def _generate_data_flow_diagram(self, architecture, codebase_context):
-        """Generate data flow diagram"""
+
         return """```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐     ┌──────────────┐
 │   Browser   │────▶│  App.tsx     │────▶│  AppRoutes  │────▶│ Page         │
@@ -265,7 +266,7 @@ Remember: When in doubt, find a similar working example in the codebase and adap
 ```"""
     
     def _generate_state_management_diagram(self, codebase_context):
-        """Generate state management diagram"""
+
         content_lower = codebase_context.lower()
         
         if 'redux' in content_lower:
@@ -285,7 +286,7 @@ Global State (Context)            Local State (React)         Server State
 ```"""
     
     def _generate_common_scenarios(self, codebase_context, framework):
-        """Generate common development scenarios with solutions"""
+
         scenarios = []
         
         # Scenario 1: Finding data source
@@ -375,7 +376,7 @@ Global State (Context)            Local State (React)         Server State
         return '\n\n'.join(scenarios)
     
     def _generate_code_patterns(self, codebase_context, framework):
-        """Generate code patterns section"""
+
         patterns = []
         
         # Pattern 1: API Service
@@ -478,7 +479,7 @@ const FormComponent: React.FC = () => {
         return '\n\n'.join(patterns)
     
     def _generate_debugging_guide(self, codebase_context, framework):
-        """Generate debugging guide section"""
+
         guide_sections = []
         
         # Common issues
@@ -540,7 +541,7 @@ const updateArray = () => {
         return '\n\n'.join(guide_sections)
     
     def _generate_project_knowledge(self, codebase_context, modules):
-        """Generate project-specific knowledge section"""
+
         knowledge = []
         
         # API patterns
@@ -590,7 +591,7 @@ Is it used by multiple components?
         return '\n\n'.join(knowledge)
     
     def _generate_framework_specific_tools(self, framework):
-        """Generate framework-specific tool recommendations"""
+
         framework_lower = framework.lower()
         
         if 'react' in framework_lower:
@@ -603,14 +604,14 @@ Is it used by multiple components?
             return ""
     
     def _generate_naming_conventions(self, codebase_context):
-        """Generate naming conventions based on codebase"""
+
         return """- Components: `PascalCase.tsx` (e.g., `ApplicantSearch.tsx`)
 - Services: `camelCase.ts` (e.g., `applicantService.ts`)
 - Types/Interfaces: `PascalCase.ts` (e.g., `ApplicantRequest.ts`)
 - Utils: `kebab-case.ts` (e.g., `date-helper.ts`)"""
     
     def _generate_import_order_example(self, framework):
-        """Generate import order example"""
+
         return """```typescript
 // 1. External libraries
 import React from 'react';
@@ -630,7 +631,7 @@ import './styles.css';
 ```"""
     
     def _generate_performance_tips(self, framework):
-        """Generate performance optimization tips"""
+
         tips = []
         
         # Code splitting
@@ -661,8 +662,8 @@ const handleClick = useCallback(() => {
         
         return '\n\n'.join(tips)
     
-    def _analyze_tech_stack(self, codebase_context, modules):
-        """Analyze and format the tech stack"""
+    def _check_tech_stack(self, codebase_context, modules):
+
         tech_stack = []
         content_lower = codebase_context.lower()
         

@@ -10,23 +10,22 @@ from collections import defaultdict
 
 
 class CodeGenerator:
-    """Handles code generation based on existing patterns."""
+
     
     def __init__(self, consolidated_code: str):
         self.consolidated_code = consolidated_code
-        self.patterns = self._extract_patterns()
+        self.patterns = self._get_patterns()
     
-    def _extract_patterns(self) -> Dict[str, Any]:
-        """Extract common patterns from the codebase."""
+    def _get_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'imports': defaultdict(set),
             'class_structures': defaultdict(list),
             'function_patterns': defaultdict(list),
-            'naming_conventions': self._analyze_naming_conventions(),
-            'code_style': self._analyze_code_style()
+            'naming_conventions': self._check_naming_conventions(),
+            'code_style': self._check_code_style()
         }
-        
-        # Extract imports
+# Not the cleanest, but it does the job
         import_pattern = r'^(from\s+[\w.]+\s+import\s+[\w,\s]+|import\s+[\w.]+)'
         for match in re.finditer(import_pattern, self.consolidated_code, re.MULTILINE):
             import_stmt = match.group(0)
@@ -36,45 +35,42 @@ class CodeGenerator:
             else:
                 module = import_stmt.split('import')[1].strip().split('.')[0]
                 patterns['imports'][module].add(import_stmt)
-        
-        # Extract class structures
+# Not the cleanest, but it does the job
         class_pattern = r'class\s+(\w+).*?(?=class\s+\w+|def\s+\w+|$)'
         for match in re.finditer(class_pattern, self.consolidated_code, re.DOTALL):
             class_name = match.group(1)
             class_body = match.group(0)
             patterns['class_structures'][self._get_class_type(class_name)].append({
                 'name': class_name,
-                'methods': self._extract_methods(class_body),
-                'decorators': self._extract_decorators(class_body)
+                'methods': self._get_methods(class_body),
+                'decorators': self._get_decorators(class_body)
             })
         
         return patterns
     
-    def _analyze_naming_conventions(self) -> Dict[str, str]:
-        """Analyze naming conventions used in the codebase."""
+    def _check_naming_conventions(self) -> Dict[str, str]:
+
         conventions = {
             'functions': 'snake_case',
             'classes': 'PascalCase',
             'constants': 'UPPER_SNAKE_CASE',
             'private_methods': '_snake_case'
         }
-        
-        # Check for actual conventions in code
+# Works, but could be neater
         if re.search(r'def\s+[a-z]+[A-Z]', self.consolidated_code):
             conventions['functions'] = 'camelCase'
         
         return conventions
     
-    def _analyze_code_style(self) -> Dict[str, Any]:
-        """Analyze code style preferences."""
+    def _check_code_style(self) -> Dict[str, Any]:
+
         style = {
             'quotes': 'single' if self.consolidated_code.count("'") > self.consolidated_code.count('"') else 'double',
             'indentation': 4,  # Default Python
             'line_length': 88,  # Black default
             'docstring_style': 'google'  # Default assumption
         }
-        
-        # Check for docstring style
+# Not the cleanest, but it does the job
         if '"""' in self.consolidated_code:
             if re.search(r'""".*?:param', self.consolidated_code, re.DOTALL):
                 style['docstring_style'] = 'sphinx'
@@ -84,7 +80,7 @@ class CodeGenerator:
         return style
     
     def _get_class_type(self, class_name: str) -> str:
-        """Determine the type of class based on name."""
+
         if class_name.endswith('Model'):
             return 'model'
         elif class_name.endswith('View'):
@@ -102,16 +98,16 @@ class CodeGenerator:
         else:
             return 'generic'
     
-    def _extract_methods(self, class_body: str) -> List[str]:
-        """Extract method names from a class body."""
+    def _get_methods(self, class_body: str) -> List[str]:
+
         methods = []
         method_pattern = r'def\s+(\w+)\s*\('
         for match in re.finditer(method_pattern, class_body):
             methods.append(match.group(1))
         return methods
     
-    def _extract_decorators(self, class_body: str) -> List[str]:
-        """Extract decorators from a class body."""
+    def _get_decorators(self, class_body: str) -> List[str]:
+
         decorators = []
         decorator_pattern = r'@(\w+)'
         for match in re.finditer(decorator_pattern, class_body):
@@ -120,7 +116,7 @@ class CodeGenerator:
     
     def generate_code(self, component_type: str, component_name: str, 
                      specifications: Optional[Dict] = None) -> str:
-        """Generate code based on existing patterns."""
+
         if component_type == 'react_component':
             return self._generate_react_component(component_name, specifications)
         elif component_type == 'python_class':
@@ -133,7 +129,7 @@ class CodeGenerator:
             return self._generate_generic_code(component_type, component_name, specifications)
     
     def _generate_react_component(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate a React component based on existing patterns."""
+
         # Look for existing React components
         react_pattern = r'(function|const)\s+\w+\s*=.*?return\s*\('
         has_react = bool(re.search(react_pattern, self.consolidated_code))
@@ -148,7 +144,7 @@ class CodeGenerator:
         return self._default_react_component(name, specs)
     
     def _generate_python_class(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate a Python class based on existing patterns."""
+
         class_type = self._get_class_type(name)
         similar_classes = self.patterns['class_structures'].get(class_type, [])
         
@@ -161,7 +157,7 @@ class CodeGenerator:
         return self._default_python_class(name, specs)
     
     def _generate_api_endpoint(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate an API endpoint based on existing patterns."""
+
         # Look for Flask/FastAPI patterns
         flask_pattern = r'@app\.route\(.*?\)\s*def\s+\w+\(.*?\):'
         fastapi_pattern = r'@(app|router)\.(get|post|put|delete)\(.*?\)\s*async\s+def\s+\w+\(.*?\):'
@@ -177,7 +173,7 @@ class CodeGenerator:
             return self._default_api_endpoint(name, specs)
     
     def _generate_test(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate a test based on existing patterns."""
+
         # Look for test patterns
         pytest_pattern = r'def\s+test_\w+\(.*?\):'
         unittest_pattern = r'class\s+Test\w+\(.*?TestCase.*?\):'
@@ -193,18 +189,18 @@ class CodeGenerator:
             return self._default_test(name, specs)
     
     def _find_similar_react_components(self, name: str) -> List[str]:
-        """Find similar React components in the codebase."""
+
         components = []
         # Implementation would search for similar component patterns
         return components
     
     def _adapt_react_component(self, template: str, name: str, specs: Optional[Dict]) -> str:
-        """Adapt an existing React component as a template."""
+
         # Implementation would modify the template
         return self._default_react_component(name, specs)
     
     def _adapt_python_class(self, template: Dict, name: str, specs: Optional[Dict]) -> str:
-        """Adapt an existing Python class as a template."""
+
         methods = specs.get('methods', []) if specs else []
         base_class = specs.get('base_class', '') if specs else ''
         
@@ -230,7 +226,7 @@ class CodeGenerator:
         return code
     
     def _default_react_component(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a default React component."""
+
         props = specs.get('props', []) if specs else []
         state = specs.get('state', []) if specs else []
         
@@ -250,7 +246,7 @@ class CodeGenerator:
         return code
     
     def _default_python_class(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a default Python class."""
+
         code = f"class {name}:\n"
         code += f'    """Default implementation for {name}."""\n\n'
         code += "    def __init__(self):\n"
@@ -259,7 +255,7 @@ class CodeGenerator:
         return code
     
     def _generate_fastapi_endpoint(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a FastAPI endpoint."""
+
         method = specs.get('method', 'get').lower() if specs else 'get'
         path = specs.get('path', f'/{name.lower()}') if specs else f'/{name.lower()}'
         
@@ -276,7 +272,7 @@ class CodeGenerator:
         return code
     
     def _generate_flask_endpoint(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a Flask endpoint."""
+
         method = specs.get('method', 'GET').upper() if specs else 'GET'
         path = specs.get('path', f'/{name.lower()}') if specs else f'/{name.lower()}'
         
@@ -288,11 +284,11 @@ class CodeGenerator:
         return code
     
     def _default_api_endpoint(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a generic API endpoint."""
+
         return self._generate_flask_endpoint(name, specs)
     
     def _generate_pytest(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a pytest test."""
+
         function_to_test = specs.get('function', name) if specs else name
         
         code = f"def test_{name}():\n"
@@ -307,7 +303,7 @@ class CodeGenerator:
         return code
     
     def _generate_unittest(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a unittest test."""
+
         class_name = f"Test{name.capitalize()}"
         
         code = f"class {class_name}(unittest.TestCase):\n"
@@ -319,12 +315,12 @@ class CodeGenerator:
         return code
     
     def _default_test(self, name: str, specs: Optional[Dict]) -> str:
-        """Generate a default test."""
+
         return self._generate_pytest(name, specs)
     
     def _generate_generic_code(self, component_type: str, name: str, 
                               specs: Optional[Dict]) -> str:
-        """Generate generic code for unrecognized types."""
+
         code = f"# Generated {component_type}: {name}\n"
         code += f"# Specifications: {json.dumps(specs, indent=2) if specs else 'None'}\n\n"
         code += "# TODO: Implement based on project patterns\n"

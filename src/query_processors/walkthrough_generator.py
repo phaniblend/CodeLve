@@ -9,15 +9,16 @@ from collections import defaultdict
 
 
 class WalkthroughGenerator:
-    """Generates step-by-step walkthroughs for various development tasks."""
+
     
     def __init__(self, consolidated_code: str):
+    # Works, but could be neater
         self.consolidated_code = consolidated_code
-        self.file_structure = self._extract_file_structure()
-        self.patterns = self._extract_patterns()
+        self.file_structure = self._get_file_structure()
+        self.patterns = self._get_patterns()
     
-    def _extract_file_structure(self) -> Dict[str, str]:
-        """Extract file structure from consolidated code."""
+    def _get_file_structure(self) -> Dict[str, str]:
+
         files = {}
         current_file = None
         current_content = []
@@ -39,8 +40,8 @@ class WalkthroughGenerator:
         
         return files
     
-    def _extract_patterns(self) -> Dict[str, Any]:
-        """Extract common patterns from the codebase."""
+    def _get_patterns(self) -> Dict[str, Any]:
+
         patterns = {
             'framework': self._detect_framework(),
             'testing': self._detect_testing_framework(),
@@ -50,7 +51,7 @@ class WalkthroughGenerator:
         return patterns
     
     def _detect_framework(self) -> str:
-        """Detect the web framework being used."""
+
         if '@app.route' in self.consolidated_code:
             return 'flask'
         elif '@router.' in self.consolidated_code or '@app.get' in self.consolidated_code:
@@ -62,7 +63,7 @@ class WalkthroughGenerator:
         return 'unknown'
     
     def _detect_testing_framework(self) -> str:
-        """Detect the testing framework being used."""
+
         if 'def test_' in self.consolidated_code and 'pytest' in self.consolidated_code:
             return 'pytest'
         elif 'unittest.TestCase' in self.consolidated_code:
@@ -72,7 +73,7 @@ class WalkthroughGenerator:
         return 'unknown'
     
     def _detect_database_orm(self) -> str:
-        """Detect the database ORM being used."""
+
         if 'from sqlalchemy' in self.consolidated_code:
             return 'sqlalchemy'
         elif 'from django.db import models' in self.consolidated_code:
@@ -82,7 +83,7 @@ class WalkthroughGenerator:
         return 'unknown'
     
     def _detect_auth_method(self) -> str:
-        """Detect the authentication method being used."""
+
         if 'jwt' in self.consolidated_code.lower():
             return 'jwt'
         elif 'session' in self.consolidated_code.lower():
@@ -92,7 +93,7 @@ class WalkthroughGenerator:
         return 'unknown'
     
     def generate_feature_walkthrough(self, feature_name: str, feature_type: str) -> str:
-        """Generate a walkthrough for implementing a new feature."""
+
         # Generate steps based on feature type
         if feature_type == 'api_endpoint':
             steps = self._generate_api_endpoint_steps(feature_name)
@@ -110,11 +111,10 @@ class WalkthroughGenerator:
         return self._format_walkthrough(steps, feature_name, feature_type)
     
     def _generate_api_endpoint_steps(self, endpoint_name: str) -> List[Dict[str, Any]]:
-        """Generate basic API endpoint implementation steps."""
+
         framework = self.patterns['framework']
         steps = []
-        
-        # Route handler
+# Might need cleanup
         if framework == 'fastapi':
             route_code = f"""
 @router.get("/{endpoint_name.lower()}")
@@ -174,7 +174,7 @@ def test_get_{endpoint_name.lower()}(client):
         return steps
     
     def _generate_database_model_steps(self, model_name: str) -> List[Dict[str, Any]]:
-        """Generate basic database model implementation steps."""
+
         orm = self.patterns['database']
         steps = []
         
@@ -218,7 +218,7 @@ class {model_name}(models.Model):
         return steps
     
     def _generate_frontend_component_steps(self, component_name: str) -> List[Dict[str, Any]]:
-        """Generate basic frontend component implementation steps."""
+
         steps = []
         
         # Component structure
@@ -247,7 +247,7 @@ export default {component_name};
         return steps
     
     def _generate_auth_steps(self, feature_name: str) -> List[Dict[str, Any]]:
-        """Generate basic authentication implementation steps."""
+
         auth_method = self.patterns['auth']
         steps = []
         
@@ -273,7 +273,7 @@ def auth_required(f):
         return steps
     
     def _generate_test_steps(self, test_name: str) -> List[Dict[str, Any]]:
-        """Generate basic test implementation steps."""
+
         test_framework = self.patterns['testing']
         steps = []
         
@@ -304,7 +304,7 @@ def test_{test_name.lower()}_edge_case():
         return steps
     
     def _generate_generic_walkthrough(self, feature_name: str, feature_type: str) -> List[Dict[str, Any]]:
-        """Generate a generic walkthrough for any feature type."""
+
         steps = []
         
         # Step 1: Analysis
@@ -406,7 +406,7 @@ result = instance.process(data)
     
     def _format_walkthrough(self, steps: List[Dict[str, Any]], feature_name: str, 
                            feature_type: str) -> str:
-        """Format the walkthrough steps into a readable guide."""
+
         output = f"# Step-by-Step Guide: Implementing {feature_name} ({feature_type})\n\n"
         output += f"This guide will walk you through implementing a {feature_type} called {feature_name} "
         output += f"following the patterns and conventions in your codebase.\n\n"
@@ -451,7 +451,7 @@ result = instance.process(data)
         return output
     
     def _suggest_file_location(self, feature_type: str, feature_name: str) -> str:
-        """Suggest appropriate file location based on existing structure."""
+
         # Map feature types to common directory patterns
         type_patterns = {
             'api_endpoint': ['routes', 'api', 'endpoints', 'controllers'],
@@ -460,8 +460,7 @@ result = instance.process(data)
             'component': ['components', 'ui', 'views'],
             'utility': ['utils', 'helpers', 'common']
         }
-        
-        # Check existing file structure for similar patterns
+# Not the cleanest, but it does the job
         patterns = type_patterns.get(feature_type, [])
         for pattern in patterns:
             for file_path in self.file_structure.keys():
@@ -473,7 +472,7 @@ result = instance.process(data)
         return f"src/{feature_type}/{feature_name.lower()}.py"
     
     def generate_understanding_walkthrough(self, component_name: str) -> str:
-        """Generate a walkthrough for understanding an existing component."""
+
         output = f"# Understanding: {component_name}\n\n"
         
         # Find relevant files

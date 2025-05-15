@@ -23,7 +23,7 @@ class CodebaseIndexer:
         self.component_map: Dict[str, str] = {}  # component_name -> file_path
         
     def index_codebase(self, root_path: str) -> Dict:
-        """Build a comprehensive index of the codebase structure"""
+
         self.root_path = Path(root_path).resolve()
         
         # First pass: collect all modules
@@ -34,7 +34,7 @@ class CodebaseIndexer:
         self._build_dependency_graph()
         
         # Third pass: identify key architectural components
-        architecture = self._analyze_architecture()
+        architecture = self._check_architecture()
         
         return {
             'modules': {k: asdict(v) for k, v in self.modules.items()},
@@ -44,7 +44,7 @@ class CodebaseIndexer:
         }
     
     def _get_all_source_files(self, root_path: str) -> List[str]:
-        """Get all Python/JS/TS files in the codebase"""
+
         files = []
         extensions = {'.py', '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'}
         
@@ -60,7 +60,7 @@ class CodebaseIndexer:
         return files
     
     def _index_file(self, file_path: str) -> None:
-        """Index a single source file"""
+
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -86,7 +86,7 @@ class CodebaseIndexer:
             print(f"Error indexing {file_path}: {e}")
     
     def _index_python_file(self, content: str, rel_path: str) -> ModuleInfo:
-        """Parse and index a Python file"""
+
         imports = []
         exports = []
         classes = []
@@ -124,22 +124,18 @@ class CodebaseIndexer:
         )
     
     def _index_js_ts_file(self, content: str, rel_path: str) -> ModuleInfo:
-        """Parse and index a JavaScript/TypeScript file using regex"""
+
         import re
-        
-        # Extract imports
+# TODO: revisit this later
         import_pattern = r'import\s+(?:{[^}]+}|[\w\s,]+)\s+from\s+[\'"]([^\'"]+)[\'"]'
         imports = re.findall(import_pattern, content)
-        
-        # Extract exports
+# FIXME: refactor when time permits
         export_pattern = r'export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(\w+)'
         exports = re.findall(export_pattern, content)
-        
-        # Extract classes
+# Works, but could be neater
         class_pattern = r'(?:export\s+)?(?:default\s+)?class\s+(\w+)'
         classes = re.findall(class_pattern, content)
-        
-        # Extract functions and React components
+# Might need cleanup
         func_pattern = r'(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s+(\w+)'
         arrow_pattern = r'(?:export\s+)?const\s+(\w+)\s*=\s*(?:\([^)]*\)|[^=]+)\s*=>'
         
@@ -157,11 +153,11 @@ class CodebaseIndexer:
         )
     
     def _path_to_module_name(self, path: str) -> str:
-        """Convert file path to module name"""
+
         return path.replace(os.sep, '.').rsplit('.', 1)[0]
     
     def _build_dependency_graph(self) -> None:
-        """Build the import dependency graph"""
+
         for module_name, info in self.modules.items():
             deps = set()
             
@@ -183,16 +179,15 @@ class CodebaseIndexer:
                         resolved = '.'.join(base_parts)
                 else:
                     resolved = imp
-                    
-                # Check if it's an internal module
+# Not the cleanest, but it does the job
                 if resolved in self.modules or any(resolved.startswith(m) for m in self.modules):
                     deps.add(resolved)
                     
             info.dependencies = deps
             self.import_graph[module_name] = deps
     
-    def _analyze_architecture(self) -> Dict:
-        """Analyze the codebase architecture"""
+    def _check_architecture(self) -> Dict:
+
         # Find entry points
         entry_points = []
         for name, info in self.modules.items():
@@ -206,8 +201,7 @@ class CodebaseIndexer:
                 import_counts[dep] = import_counts.get(dep, 0) + 1
                 
         core_modules = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-        
-        # Detect layers
+# Works, but could be neater
         layers = self._detect_layers()
         
         return {
@@ -218,7 +212,7 @@ class CodebaseIndexer:
         }
     
     def _detect_layers(self) -> Dict[str, List[str]]:
-        """Detect architectural layers based on naming patterns"""
+
         layers = {
             'presentation': [],
             'business': [],
@@ -254,7 +248,7 @@ class CodebaseIndexer:
         return layers
     
     def _group_modules_by_family(self) -> Dict[str, List[str]]:
-        """Group modules by their directory structure"""
+
         families = {}
         
         for module_name in self.modules:
@@ -271,7 +265,7 @@ class CodebaseIndexer:
         return families
     
     def _compute_stats(self) -> Dict:
-        """Compute codebase statistics"""
+
         total_files = len(self.modules)
         total_lines = sum(m.size for m in self.modules.values())
         

@@ -8,14 +8,15 @@ import time
 import torch
 
 class AnalysisPipeline:
-    """Main analysis pipeline that routes queries to appropriate analyzers"""
+
     
     def __init__(self, ai_client, framework_detector):
+    # Works, but could be neater
         self.ai_client = ai_client
         self.framework_detector = framework_detector
     
     def framework_agnostic_analysis_pipeline(self, query, codebase_context):
-        """ENHANCED: Framework-agnostic analysis pipeline with integrated architecture maps"""
+
         try:
             query_lower = query.lower()
             detected_framework = self.framework_detector.detect_framework_or_language(codebase_context)
@@ -24,39 +25,39 @@ class AnalysisPipeline:
             
             # 1. Component/Class Analysis - WITH ARCHITECTURE
             if self._is_component_or_class_query(query_lower):
-                entity_name = self._extract_entity_name(query, detected_framework)
+                entity_name = self._get_entity_name(query, detected_framework)
                 if entity_name:
                     from .entity_analyzer import EntityAnalyzer
                     analyzer = EntityAnalyzer(self.framework_detector)
-                    return analyzer.analyze_entity_with_architecture(query, codebase_context, entity_name, detected_framework)
+                    return analyzer.check_entity_with_architecture(query, codebase_context, entity_name, detected_framework)
             
             # 2. Module/Package Analysis
             if self._is_module_query(query_lower):
-                module_path = self._extract_module_path(query)
+                module_path = self._get_module_path(query)
                 if module_path:
                     from .search_utilities import SearchUtilities
                     search_utils = SearchUtilities(self.framework_detector)
-                    return search_utils.analyze_module(query, codebase_context, module_path, detected_framework)
+                    return search_utils.check_module(query, codebase_context, module_path, detected_framework)
             
             # 3. Function/Method Analysis
             if self._is_function_or_method_query(query_lower):
-                function_info = self._extract_function_info(query)
+                function_info = self._get_function_info(query)
                 if function_info:
                     from .search_utilities import SearchUtilities
                     search_utils = SearchUtilities(self.framework_detector)
-                    return search_utils.analyze_function_or_method(query, codebase_context, function_info, detected_framework)
+                    return search_utils.check_function_or_method(query, codebase_context, function_info, detected_framework)
             
             # 4. File Analysis
             if self._is_file_query(query_lower):
-                file_name = self._extract_file_name(query)
+                file_name = self._get_file_name(query)
                 if file_name:
                     from .search_utilities import SearchUtilities
                     search_utils = SearchUtilities(self.framework_detector)
-                    return search_utils.analyze_file(query, codebase_context, file_name, detected_framework)
+                    return search_utils.check_file(query, codebase_context, file_name, detected_framework)
             
             # 5. Search Queries
             if self._is_search_query(query_lower):
-                search_term = self._extract_search_term(query)
+                search_term = self._get_search_term(query)
                 if search_term:
                     from .search_utilities import SearchUtilities
                     search_utils = SearchUtilities(self.framework_detector)
@@ -66,21 +67,21 @@ class AnalysisPipeline:
             if any(word in query_lower for word in ['architecture', 'structure', 'overview', 'map', 'diagram']):
                 from .architecture_analyzer import ArchitectureAnalyzer
                 arch_analyzer = ArchitectureAnalyzer(self.framework_detector)
-                return arch_analyzer.analyze_codebase_architecture(codebase_context, detected_framework)
+                return arch_analyzer.check_codebase_architecture(codebase_context, detected_framework)
             
             # 7. AI Model Response (Fallback)
             if self.ai_client.model and self.ai_client.tokenizer:
                 return self._generate_ai_response(query, codebase_context)
             else:
-                return self._generate_enhanced_suggestions(query, codebase_context, detected_framework)
+                return self._get_fallback_suggestions(query, codebase_context, detected_framework)
                 
         except Exception as e:
-            return f"❌ Analysis failed: {str(e)}\n\nTry rephrasing your query or use more specific terms."
+            return f"
     
     # QUERY TYPE DETECTION (Framework Agnostic)
     
     def _is_component_or_class_query(self, query_lower):
-        """Detect if query is asking about a component/class/entity"""
+
         entity_indicators = ['component', 'class', 'struct', 'interface', 'module', 'service', 'controller']
         action_words = ['explain', 'analyze', 'show', 'describe', 'what is', 'how does', 'teach', 'guide']
         
@@ -88,29 +89,29 @@ class AnalysisPipeline:
                 any(action in query_lower for action in action_words))
     
     def _is_function_or_method_query(self, query_lower):
-        """Detect if query is asking about a function/method"""
+
         return (any(keyword in query_lower for keyword in ['function', 'method', 'func', 'def']) or 
                 'from' in query_lower and any(word in query_lower for word in ['explain', 'show', 'analyze']))
     
     def _is_file_query(self, query_lower):
-        """Detect if query is asking about a file"""
+
         file_indicators = ['file', 'analyze', 'show', 'explain']
         return any(indicator in query_lower for indicator in file_indicators) and '.' in query_lower
     
     def _is_search_query(self, query_lower):
-        """Detect if query is a search request"""
+
         search_words = ['find', 'search', 'list', 'show all', 'locate']
         return any(word in query_lower for word in search_words)
     
     def _is_module_query(self, query_lower):
-        """Detect if query is asking about a module/directory/package"""
+
         module_indicators = ['module', 'directory', 'folder', 'package', 'namespace', 'feature']
         return any(indicator in query_lower for indicator in module_indicators)
     
     # EXTRACTION METHODS (Framework Agnostic)
     
-    def _extract_entity_name(self, query, framework):
-        """Extract entity name from query (component/class/struct/etc.)"""
+    def _get_entity_name(self, query, framework):
+
         words = query.split()
         
         # Look for word before entity type keywords
@@ -132,8 +133,8 @@ class AnalysisPipeline:
         
         return None
     
-    def _extract_function_info(self, query):
-        """Extract function information from query"""
+    def _get_function_info(self, query):
+
         if 'from' in query:
             parts = query.split('from')
             if len(parts) == 2:
@@ -145,8 +146,8 @@ class AnalysisPipeline:
         
         return None
     
-    def _extract_file_name(self, query):
-        """Extract file name from query"""
+    def _get_file_name(self, query):
+
         words = query.split()
         common_extensions = ['.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.cs', '.cpp', '.c', '.go', '.rs', '.php', '.rb', '.swift', '.kt', '.vue', '.html', '.css']
         for word in words:
@@ -154,15 +155,15 @@ class AnalysisPipeline:
                 return word
         return None
     
-    def _extract_search_term(self, query):
-        """Extract search term from query"""
+    def _get_search_term(self, query):
+
         search_words = ['find', 'search', 'list', 'show', 'all', 'locate', 'get']
         words = query.split()
         filtered_words = [word for word in words if word.lower() not in search_words]
         return ' '.join(filtered_words) if filtered_words else None
     
-    def _extract_module_path(self, query):
-        """Extract module path from query"""
+    def _get_module_path(self, query):
+
         words = query.split()
         for word in words:
             if '/' in word or '\\' in word:
@@ -170,7 +171,7 @@ class AnalysisPipeline:
         return None
     
     def _generate_ai_response(self, query, codebase_context):
-        """Generate AI response using the single model fallback"""
+
         try:
             prompt = f"Analyze this codebase and answer: {query}\n\nCode context:\n{codebase_context[:1000]}..."
             
@@ -191,24 +192,24 @@ class AnalysisPipeline:
             response = self.ai_client.tokenizer.decode(
                 outputs[0][inputs.shape[1]:], skip_special_tokens=True)
             
-            return f"🤖 **AI Analysis:**\n\n{response.strip()}" if response.strip() else self._generate_enhanced_suggestions(query, codebase_context, "Multi-language")
+            return f"
             
         except Exception as e:
             print(f"AI generation error: {str(e)}")
-            return self._generate_enhanced_suggestions(query, codebase_context, "Multi-language")
+            return self._get_fallback_suggestions(query, codebase_context, "Multi-language")
 
-    def _generate_enhanced_suggestions(self, query, codebase_context, framework):
-        """Generate enhanced suggestions in a framework-agnostic way"""
+    def _get_fallback_suggestions(self, query, codebase_context, framework):
+
         detected_framework = self.framework_detector.detect_framework_or_language(codebase_context)
         app_domain = self.framework_detector.determine_app_domain_agnostic(codebase_context)
         
-        return f"""# 🤖 **CodeLve Framework-Agnostic Analysis Assistant**
+        return f"""
 
 **Your query:** "{query}"
 **Detected Framework:** {detected_framework}
 **Application Domain:** {app_domain}
 
-## 💼 **Framework-Agnostic Analysis Options:**
+
 
 ### **Entity Analysis (Any Language/Framework):**
 - `explain [EntityName] component` - Complete business workflow analysis
@@ -226,20 +227,20 @@ class AnalysisPipeline:
 - `find business logic` - Core business functionality
 - `find error handling` - Exception management patterns
 
-## 🎯 **Framework-Specific Guidance:**
+
 
 **{detected_framework} Detected - I can analyze:**
 - {self.framework_detector.get_framework_specific_patterns(detected_framework)}
 - Framework-specific best practices and patterns
 - Architecture recommendations for {detected_framework}
 
-## 🔍 **Universal Analysis Tips:**
+
 - I work with ANY programming language or framework
 - Ask about business workflows, not just technical implementation
 - I explain WHY code exists, not just HOW it works
 - I connect technical implementation to business value
 
-## 📊 **Example Universal Queries:**
+
 - "explain AuthenticationService" → Complete auth workflow analysis
 - "find payment processing" → All payment-related functionality
 - "analyze error handling patterns" → Exception management across codebase
@@ -249,17 +250,16 @@ Ready to analyze your {detected_framework} codebase! 🚀
 
 
 class QueryRouter:
-    """Routes different types of queries to appropriate analyzers"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
     
     def route_query(self, query, codebase_context):
-        """Route query to the most appropriate analyzer"""
+
         query_lower = query.lower()
         detected_framework = self.framework_detector.detect_framework_or_language(codebase_context)
-        
-        # Determine query type and route accordingly
+# Not the cleanest, but it does the job
         if any(word in query_lower for word in ['architecture', 'structure', 'overview']):
             return 'architecture'
         elif any(word in query_lower for word in ['component', 'class', 'service']):
@@ -272,7 +272,7 @@ class QueryRouter:
             return 'general'
     
     def get_analysis_priority(self, query, codebase_context):
-        """Determine analysis priority based on query complexity"""
+
         query_lower = query.lower()
         
         # High priority for architecture and complex analysis
@@ -285,13 +285,13 @@ class QueryRouter:
 
 
 class ContextAnalyzer:
-    """Analyzes codebase context for better routing decisions"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
     
-    def analyze_context_complexity(self, codebase_context):
-        """Analyze the complexity of the codebase context"""
+    def check_context_complexity(self, codebase_context):
+
         lines = codebase_context.split('\n')
         files_count = len([line for line in lines if line.startswith('filepath:///')])
         total_lines = len([line for line in lines if line.strip() and not line.startswith('filepath:///')])
@@ -306,7 +306,7 @@ class ContextAnalyzer:
             return 'low'
     
     def get_dominant_file_types(self, codebase_context):
-        """Get the dominant file types in the codebase"""
+
         file_types = {}
         lines = codebase_context.split('\n')
         
@@ -321,8 +321,8 @@ class ContextAnalyzer:
         return sorted_types[:5]  # Return top 5 file types
     
     def estimate_analysis_time(self, query, codebase_context):
-        """Estimate how long analysis might take"""
-        complexity = self.analyze_context_complexity(codebase_context)
+
+        complexity = self.check_context_complexity(codebase_context)
         query_type = 'simple' if len(query.split()) < 5 else 'complex'
         
         time_estimates = {
@@ -340,44 +340,44 @@ class ContextAnalyzer:
 
 
 class ResponseFormatter:
-    """Formats analysis responses for better readability"""
+
     
     def __init__(self):
         pass
     
     def format_architecture_response(self, analysis_result):
-        """Format architecture analysis responses"""
+
         if not analysis_result or len(analysis_result) < 100:
-            return "❌ Architecture analysis failed - insufficient data"
+            return "
         
         # Add timestamp and metadata
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        formatted = f"""**📊 CodeLve Architecture Analysis**
+        formatted = f"""
 *Generated: {timestamp}*
 
 {analysis_result}
 
 ---
-*💡 Tip: Use 'explain [ComponentName]' for detailed component analysis*
+
 """
         return formatted
     
     def format_entity_response(self, analysis_result):
-        """Format entity analysis responses"""
+
         if not analysis_result or len(analysis_result) < 100:
-            return "❌ Entity analysis failed - component not found or insufficient data"
+            return "
             
         return analysis_result  # Entity responses are already well-formatted
     
     def format_search_response(self, analysis_result):
-        """Format search responses"""
+
         if not analysis_result or 'No matches found' in analysis_result:
-            return f"🔍 **Search completed but no results found**\n\n{analysis_result}"
+            return f"
         
         return analysis_result
     
     def add_performance_info(self, response, start_time):
-        """Add performance information to responses"""
+
         elapsed_time = time.time() - start_time
-        performance_note = f"\n\n---\n*⚡ Analysis completed in {elapsed_time:.2f} seconds*"
+        performance_note = f"\n\n---\n
         return response + performance_note

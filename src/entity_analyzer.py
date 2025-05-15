@@ -7,14 +7,14 @@ from pathlib import Path
 import re
 
 class EntityAnalyzer:
-    """Analyze individual entities (components, classes, functions) in detail"""
+
     
     def __init__(self, framework_detector):
         self.framework_detector = framework_detector
         
-    def analyze_entity(self, entity_name, codebase_context, framework=None):
-        """Analyze a specific entity (component, class, function)"""
-        print(f"🔍 Analyzing entity: {entity_name}")
+    def check_entity(self, entity_name, codebase_context, framework=None):
+
+        print(f"
         
         # First, find the entity
         entity_content = self._find_entity_in_codebase(entity_name, codebase_context)
@@ -24,28 +24,27 @@ class EntityAnalyzer:
             print(f"✅ Found entity content: {len(entity_content)} characters")
             print(f"📄 Content preview: {entity_content[:200]}...")
         else:
-            print("❌ No entity content found")
+            print("
         
         if not entity_content:
             # Entity not found - provide helpful suggestions
             return self._entity_not_found_response(entity_name, codebase_context, framework)
-        
-        # Extract just the code if we have the full file content
-        code_content = self._extract_code_from_content(entity_content)
+# Works, but could be neater
+        code_content = self._get_code_from_content(entity_content)
         
         # For test files, provide specialized analysis
         if '.test.' in entity_name or '.spec.' in entity_name:
-            return self._analyze_test_file(entity_name, code_content, framework)
+            return self._check_test_file(entity_name, code_content, framework)
         
         # For regular components, provide component analysis
-        return self._analyze_component(entity_name, code_content, framework)
+        return self._check_component(entity_name, code_content, framework)
     
-    def analyze_entity_with_architecture(self, query, codebase_context, entity_name, framework):
-        """Analyze entity with architectural context"""
+    def check_entity_with_architecture(self, query, codebase_context, entity_name, framework):
+
         print(f"🏗️ Analyzing {entity_name} with architectural context")
         
         # First get the basic entity analysis
-        basic_analysis = self.analyze_entity(entity_name, codebase_context, framework)
+        basic_analysis = self.check_entity(entity_name, codebase_context, framework)
         
         # If entity not found, return the basic response
         if "Entity Not Found" in basic_analysis:
@@ -59,10 +58,10 @@ class EntityAnalyzer:
 ## 🏗️ Architectural Context
 
 ### Where This Fits in the System:
-{self._analyze_entity_role(entity_name, codebase_context)}
+{self._check_entity_role(entity_name, codebase_context)}
 
 ### Dependencies:
-{self._analyze_entity_dependencies(entity_name, codebase_context)}
+{self._check_entity_dependencies(entity_name, codebase_context)}
 
 ### Used By:
 {usage_context}
@@ -75,7 +74,7 @@ class EntityAnalyzer:
         return arch_context + basic_analysis
     
     def _find_entity_usage(self, entity_name, codebase_context):
-        """Find where an entity is used in the codebase"""
+
         usage_files = []
         entity_stem = Path(entity_name).stem
         
@@ -98,8 +97,8 @@ class EntityAnalyzer:
             return "- " + "\n- ".join(usage_files[:5])
         return "- No direct usage found (may be used dynamically)"
     
-    def _analyze_entity_role(self, entity_name, codebase_context):
-        """Analyze the architectural role of an entity"""
+    def _check_entity_role(self, entity_name, codebase_context):
+
         name_lower = entity_name.lower()
         
         if 'service' in name_lower:
@@ -115,14 +114,13 @@ class EntityAnalyzer:
         else:
             return "**Application Layer** - Core application functionality"
     
-    def _analyze_entity_dependencies(self, entity_name, codebase_context):
-        """Analyze what this entity depends on"""
+    def _check_entity_dependencies(self, entity_name, codebase_context):
+
         # Find the entity content
         entity_content = self._find_entity_in_codebase(entity_name, codebase_context)
         if not entity_content:
             return "- Unable to analyze dependencies"
-        
-        # Extract imports
+# TODO: revisit this later
         imports = []
         for line in entity_content.split('\n'):
             if 'import' in line and ('from' in line or 'import ' in line):
@@ -133,7 +131,7 @@ class EntityAnalyzer:
         return '\n'.join(imports) if imports else "- No external dependencies"
     
     def _find_entity_in_codebase(self, entity_name, codebase_context):
-        """Find entity content in codebase with better path matching"""
+
         lines = codebase_context.split('\n')
         
         # Normalize the entity name for better matching
@@ -155,15 +153,14 @@ class EntityAnalyzer:
         found_file = False
         
         for i, line in enumerate(lines):
-            # Check for file path marker
+# Works, but could be neater
             if line.startswith('filepath:///'):
                 # If we were collecting content, stop
                 if in_file and file_content_lines:
                     break
                     
                 current_file_path = line.replace('filepath:///', '').strip()
-                
-                # Check if this matches any of our search patterns
+# TODO: revisit this later
                 for pattern in search_patterns:
                     if pattern in current_file_path or current_file_path.endswith(pattern):
                         found_file = True
@@ -193,7 +190,7 @@ class EntityAnalyzer:
         return self._search_by_component_name(component_name, lines)
     
     def _search_by_component_name(self, component_name, lines):
-        """Search for component by name in the codebase"""
+
         content_lines = []
         in_component = False
         current_file = ""
@@ -223,8 +220,8 @@ class EntityAnalyzer:
         
         return '\n'.join(content_lines) if len(content_lines) > 2 else None
     
-    def _extract_code_from_content(self, content):
-        """Extract just the code from the file content"""
+    def _get_code_from_content(self, content):
+
         lines = content.split('\n')
         
         # Skip the file path line if present
@@ -241,11 +238,10 @@ class EntityAnalyzer:
         
         return code.strip()
     
-    def _analyze_test_file(self, file_name, code_content, framework):
-        """Analyze a test file and provide insights"""
+    def _check_test_file(self, file_name, code_content, framework):
+
         lines = code_content.split('\n') if code_content else []
-        
-        # Extract test information
+# Not the cleanest, but it does the job
         imports = [line.strip() for line in lines if 'import' in line]
         mocks = [line.strip() for line in lines if 'jest.mock' in line or 'mock' in line.lower()]
         test_cases = [line.strip() for line in lines if 'describe(' in line or 'it(' in line or 'test(' in line]
@@ -265,7 +261,7 @@ class EntityAnalyzer:
 **Testing:** {component_under_test} component
 **File:** `{file_name}`
 
-## 🎯 What This Test File Does
+
 This test suite validates the {component_under_test} component functionality:
 - **Form Validation**: Tests user input validation and error handling
 - **API Integration**: Validates service calls and responses
@@ -306,7 +302,7 @@ This test suite validates the {component_under_test} component functionality:
    - Redux store includes permission state
    - Tests conditional rendering based on permissions
 
-## 📊 Test Coverage Areas
+
 
 - ✅ Component rendering
 - ✅ Form field interactions
@@ -315,7 +311,7 @@ This test suite validates the {component_under_test} component functionality:
 - ✅ Permission-based features
 - ✅ Navigation flows
 
-## 🔍 When to Update This Test
+
 
 1. **Component Changes**
    - New props added to UserViewAndForm
@@ -332,7 +328,7 @@ This test suite validates the {component_under_test} component functionality:
    - Workflow changes
    - New user roles added
 
-## 💡 Testing Best Practices
+
 
 - **Mock all async operations**: Ensure all API calls return resolved promises
 - **Test user interactions**: Use fireEvent for clicks and form submissions
@@ -363,22 +359,20 @@ This test suite validates the {component_under_test} component functionality:
         
         return analysis
     
-    def _analyze_component(self, component_name, code_content, framework):
-        """Analyze a regular component with detailed insights"""
+    def _check_component(self, component_name, code_content, framework):
+
         lines = code_content.split('\n') if code_content else []
-        
-        # Extract component information
+# TODO: revisit this later
         imports = [line.strip() for line in lines if line.strip().startswith('import')]
         hooks = [line.strip() for line in lines if 'use' in line and '(' in line and not '//' in line.split('use')[0]]
         props_match = re.search(r'interface\s+\w*Props\s*{([^}]+)}', code_content, re.DOTALL)
         state_vars = [line.strip() for line in lines if 'useState' in line]
         effects = [line.strip() for line in lines if 'useEffect' in line]
-        
-        # Determine component type
+# Quick workaround for now
         is_page = '/pages/' in component_name
         is_form = 'form' in component_name.lower()
         
-        analysis = f"""# 🔍 Component Analysis: {Path(component_name).name}
+        analysis = f"""
 
 ## 📋 Overview
 **Type:** {'Page Component' if is_page else 'React Component'} {'(Form)' if is_form else ''}
@@ -400,21 +394,21 @@ This test suite validates the {component_under_test} component functionality:
 ### Side Effects ({len(effects)} useEffect hooks)
 {self._format_list(effects[:3])}
 
-## 💡 Component Analysis
+
 
 ### Purpose
 This {'page' if is_page else 'component'} appears to handle:
 {self._infer_component_purpose(component_name, code_content)}
 
 ### Key Features
-{self._analyze_component_features(code_content)}
+{self._check_component_features(code_content)}
 
 ## 🔄 Data Flow
-- **Props**: {self._extract_props_summary(props_match)}
+- **Props**: {self._get_props_summary(props_match)}
 - **State Management**: {len(state_vars)} local state variables
 - **External Data**: {self._check_api_calls(code_content)}
 
-## 🎯 Usage Guidelines
+
 
 ### When to Use This Component
 - {self._suggest_usage_scenario(component_name, is_page, is_form)}
@@ -424,8 +418,8 @@ This {'page' if is_page else 'component'} appears to handle:
 - Integrates with services for data operations
 - May dispatch Redux actions for global state
 
-## 🔍 Code Quality Insights
-{self._analyze_code_quality(code_content, lines)}
+
+{self._check_code_quality(code_content, lines)}
 
 ## 📝 Developer Notes
 - Review imports to understand all dependencies
@@ -441,13 +435,13 @@ This {'page' if is_page else 'component'} appears to handle:
         return analysis
     
     def _format_list(self, items):
-        """Format a list for display"""
+
         if not items:
             return "- None detected"
         return '\n'.join(f"- `{item[:80]}{'...' if len(item) > 80 else ''}`" for item in items)
     
     def _infer_component_purpose(self, name, content):
-        """Infer component purpose from name and content"""
+
         purposes = []
         name_lower = name.lower()
         content_lower = content.lower()
@@ -468,8 +462,8 @@ This {'page' if is_page else 'component'} appears to handle:
         
         return '\n'.join(purposes) if purposes else "- Component-specific functionality"
     
-    def _analyze_component_features(self, content):
-        """Analyze component features"""
+    def _check_component_features(self, content):
+
         features = []
         content_lower = content.lower()
         
@@ -484,8 +478,8 @@ This {'page' if is_page else 'component'} appears to handle:
         
         return '\n'.join(features) if features else "- Standard component features"
     
-    def _extract_props_summary(self, props_match):
-        """Extract props summary"""
+    def _get_props_summary(self, props_match):
+
         if props_match:
             props_content = props_match.group(1)
             props_lines = [line.strip() for line in props_content.split('\n') if line.strip()]
@@ -493,13 +487,13 @@ This {'page' if is_page else 'component'} appears to handle:
         return "No explicit props interface found"
     
     def _check_api_calls(self, content):
-        """Check for API calls"""
+
         if 'axios' in content or 'fetch' in content:
             return "Makes API calls"
         return "No direct API calls detected"
     
     def _suggest_usage_scenario(self, name, is_page, is_form):
-        """Suggest usage scenarios"""
+
         if is_page:
             return "Main application page/route"
         elif is_form:
@@ -507,8 +501,8 @@ This {'page' if is_page else 'component'} appears to handle:
         else:
             return "Reusable UI component"
     
-    def _analyze_code_quality(self, content, lines):
-        """Basic code quality analysis"""
+    def _check_code_quality(self, content, lines):
+
         quality_notes = []
         
         if len(lines) > 300:
@@ -518,23 +512,23 @@ This {'page' if is_page else 'component'} appears to handle:
         if 'TODO' in content or 'FIXME' in content:
             quality_notes.append("- 📝 Contains TODO/FIXME comments")
         if 'console.log' in content:
-            quality_notes.append("- 🔍 Contains console.log statements")
+            quality_notes.append("-
         
         return '\n'.join(quality_notes) if quality_notes else "- ✅ No immediate quality concerns"
     
     def _entity_not_found_response(self, entity_name, codebase_context, framework):
-        """Generate helpful response when entity is not found"""
+
         # Find similar entities
         similar = self._find_similar_entities(entity_name, codebase_context)
         
         similar_list = "\n".join([f"• `{s}`" for s in similar[:8]])
         
-        return f"""# 🔍 Entity Not Found: {entity_name}
+        return f"""
 
-## 💡 Similar Entities Found:
+
 {similar_list}
 
-## 🎯 Search Suggestions:
+
 - `find {Path(entity_name).stem}` - Search for the component name
 - `find {entity_name.split('/')[-1]}` - Search for the file name
 - `architecture` - View overall system architecture
@@ -545,7 +539,7 @@ This {'page' if is_page else 'component'} appears to handle:
 - `architecture` - Overall system architecture"""
     
     def _find_similar_entities(self, entity_name, codebase_context):
-        """Find entities with similar names"""
+
         similar = []
         entity_parts = entity_name.lower().split('/')
         entity_stem = Path(entity_name).stem.lower()
@@ -555,8 +549,7 @@ This {'page' if is_page else 'component'} appears to handle:
             if line.startswith('filepath:///'):
                 file_path = line.replace('filepath:///', '').strip()
                 file_lower = file_path.lower()
-                
-                # Check for partial matches
+# TODO: revisit this later
                 if (entity_stem in file_lower or
                     any(part in file_lower for part in entity_parts if len(part) > 3)):
                     similar.append(file_path)
@@ -570,7 +563,7 @@ This {'page' if is_page else 'component'} appears to handle:
         return similar[:10]
     
     def _detect_entity_type(self, content):
-        """Detect what type of entity this is"""
+
         content_lower = content.lower()
         
         if 'react.fc' in content_lower or 'react.component' in content_lower or '.tsx' in content_lower:
@@ -586,8 +579,8 @@ This {'page' if is_page else 'component'} appears to handle:
         else:
             return "Module"
     
-    def _extract_imports(self, content):
-        """Extract import statements"""
+    def _get_imports(self, content):
+
         imports = []
         for line in content.split('\n'):
             if line.strip().startswith('import'):
@@ -595,13 +588,13 @@ This {'page' if is_page else 'component'} appears to handle:
         return imports[:10]  # First 10 imports
     
     def _format_imports(self, imports):
-        """Format imports for display"""
+
         if not imports:
             return "No imports detected"
         
         formatted = []
         for imp in imports:
-            # Extract the module name
+# FIXME: refactor when time permits
             match = re.search(r'from [\'"](.+?)[\'"]', imp)
             if match:
                 module = match.group(1)

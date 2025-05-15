@@ -10,14 +10,14 @@ from pathlib import Path
 
 
 class PatternFileGenerator:
-    """Generate new files following existing patterns in a directory"""
+
     
     def __init__(self, consolidated_code: str):
         self.consolidated_code = consolidated_code
         self.file_patterns = {}
         
-    def extract_directory_patterns(self, directory_path: str) -> Dict[str, any]:
-        """Extract patterns from all files in a directory"""
+    def get_directory_patterns(self, directory_path: str) -> Dict[str, any]:
+
         patterns = {
             'imports': [],
             'component_structure': None,
@@ -36,24 +36,22 @@ class PatternFileGenerator:
         
         # Analyze each file
         for file_path, content in dir_files.items():
-            file_patterns = self._analyze_file_patterns(content)
+            file_patterns = self._check_file_patterns(content)
             self._merge_patterns(patterns, file_patterns)
-        
-        # Determine common patterns
+# Works, but could be neater
         patterns['common_structure'] = self._determine_common_structure(patterns)
         
         return patterns
     
     def _find_files_in_directory(self, directory_path: str) -> Dict[str, str]:
-        """Find all files in the specified directory from consolidated code"""
+
         files = {}
         
         # Normalize directory path
         dir_path = directory_path.replace('\\', '/')
         if not dir_path.endswith('/'):
             dir_path += '/'
-        
-        # Extract files from consolidated code
+# Works, but could be neater
         file_pattern = rf'#\s*File:\s*({re.escape(dir_path)}[^/\n]+)\n(.*?)(?=#\s*File:|$)'
         
         for match in re.finditer(file_pattern, self.consolidated_code, re.DOTALL):
@@ -66,21 +64,21 @@ class PatternFileGenerator:
         
         return files
     
-    def _analyze_file_patterns(self, content: str) -> Dict:
-        """Analyze patterns in a single file"""
+    def _check_file_patterns(self, content: str) -> Dict:
+
         patterns = {
-            'imports': self._extract_imports(content),
-            'component_name': self._extract_component_name(content),
-            'props': self._extract_props(content),
-            'hooks': self._extract_hooks(content),
-            'structure': self._extract_structure(content),
-            'exports': self._extract_export_style(content)
+            'imports': self._get_imports(content),
+            'component_name': self._get_component_name(content),
+            'props': self._get_props(content),
+            'hooks': self._get_hooks(content),
+            'structure': self._get_structure(content),
+            'exports': self._get_export_style(content)
         }
         
         return patterns
     
-    def _extract_imports(self, content: str) -> List[str]:
-        """Extract import statements"""
+    def _get_imports(self, content: str) -> List[str]:
+
         imports = []
         import_pattern = r'^import\s+.*?;$'
         
@@ -89,8 +87,8 @@ class PatternFileGenerator:
         
         return imports
     
-    def _extract_component_name(self, content: str) -> Optional[str]:
-        """Extract the main component name"""
+    def _get_component_name(self, content: str) -> Optional[str]:
+
         # Function component
         pattern = r'(?:export\s+)?(?:const|function)\s+(\w+)(?::\s*React\.FC.*?)?\s*='
         match = re.search(pattern, content)
@@ -100,8 +98,8 @@ class PatternFileGenerator:
         
         return None
     
-    def _extract_props(self, content: str) -> Dict:
-        """Extract component props"""
+    def _get_props(self, content: str) -> Dict:
+
         props = {}
         
         # TypeScript interface
@@ -117,8 +115,8 @@ class PatternFileGenerator:
         
         return props
     
-    def _extract_hooks(self, content: str) -> List[str]:
-        """Extract React hooks used"""
+    def _get_hooks(self, content: str) -> List[str]:
+
         hooks = []
         hook_pattern = r'(use\w+)\s*\('
         
@@ -129,8 +127,8 @@ class PatternFileGenerator:
         
         return hooks
     
-    def _extract_structure(self, content: str) -> Dict:
-        """Extract component structure"""
+    def _get_structure(self, content: str) -> Dict:
+
         structure = {
             'has_state': 'useState' in content,
             'has_effects': 'useEffect' in content,
@@ -138,16 +136,15 @@ class PatternFileGenerator:
             'has_memo': 'useMemo' in content or 'useCallback' in content,
             'sections': []
         }
-        
-        # Extract main sections (comments indicating sections)
+# TODO: revisit this later
         section_pattern = r'//\s*([A-Z][^\n]+)'
         for match in re.finditer(section_pattern, content):
             structure['sections'].append(match.group(1))
         
         return structure
     
-    def _extract_export_style(self, content: str) -> str:
-        """Determine export style"""
+    def _get_export_style(self, content: str) -> str:
+
         if 'export default' in content:
             return 'default'
         elif 'export {' in content:
@@ -156,7 +153,7 @@ class PatternFileGenerator:
             return 'none'
     
     def _merge_patterns(self, target: Dict, source: Dict):
-        """Merge patterns from multiple files"""
+
         # Merge imports (keep unique)
         for imp in source.get('imports', []):
             if imp not in target['imports']:
@@ -173,7 +170,7 @@ class PatternFileGenerator:
                 target['prop_types'] = source['props']
     
     def _determine_common_structure(self, patterns: Dict) -> str:
-        """Determine the common structure template"""
+
         # This would analyze all patterns and create a template
         # For now, return a basic structure
         return "functional_component"
@@ -183,9 +180,7 @@ class PatternFileGenerator:
                                   directory_path: str,
                                   patterns: Dict,
                                   specifications: Optional[Dict] = None) -> str:
-        """Generate a new file following the extracted patterns"""
-        
-        # Extract component name from file name
+# FIXME: refactor when time permits
         component_name = self._filename_to_component_name(file_name)
         
         # Build the file content
@@ -210,7 +205,7 @@ class PatternFileGenerator:
         return content
     
     def _filename_to_component_name(self, file_name: str) -> str:
-        """Convert filename to component name"""
+
         # Remove extension
         name = file_name.replace('.tsx', '').replace('.jsx', '').replace('.ts', '').replace('.js', '')
         
@@ -222,11 +217,11 @@ class PatternFileGenerator:
         return ''.join(part.capitalize() for part in parts)
     
     def _is_typescript(self, file_name: str) -> bool:
-        """Check if file is TypeScript"""
+
         return file_name.endswith('.ts') or file_name.endswith('.tsx')
     
     def _generate_imports(self, patterns: Dict, specs: Optional[Dict]) -> str:
-        """Generate import statements"""
+
         imports = []
         
         # Common React imports
@@ -246,7 +241,7 @@ class PatternFileGenerator:
         return '\n'.join(imports)
     
     def _generate_interfaces(self, component_name: str, patterns: Dict, specs: Optional[Dict]) -> str:
-        """Generate TypeScript interfaces"""
+
         code = f"interface {component_name}Props {{\n"
         
         # Add props based on patterns and specifications
@@ -263,7 +258,7 @@ class PatternFileGenerator:
         return code
     
     def _generate_component(self, component_name: str, patterns: Dict, specs: Optional[Dict]) -> str:
-        """Generate the component based on patterns"""
+
         code = f"const {component_name}: React.FC<{component_name}Props> = ({{"
         
         # Add props
@@ -293,7 +288,7 @@ class PatternFileGenerator:
         return code
     
     def _generate_export(self, component_name: str, patterns: Dict) -> str:
-        """Generate export statement"""
+
         export_style = patterns.get('export_style', 'default')
         
         if export_style == 'default':
@@ -303,7 +298,7 @@ class PatternFileGenerator:
 
 
 def generate_file_following_patterns(query: str, consolidated_code: str) -> str:
-    """Main function to generate a file following directory patterns"""
+
     
     # Parse the query to extract file name and directory
     # Handle multiple query formats
@@ -325,15 +320,13 @@ def generate_file_following_patterns(query: str, consolidated_code: str) -> str:
     
     file_path = match.group(1).strip()
     directory = match.group(2).strip()
-    
-    # Extract file name
+# Works, but could be neater
     file_name = os.path.basename(file_path)
     
     # Initialize generator
     generator = PatternFileGenerator(consolidated_code)
-    
-    # Extract patterns from the directory
-    patterns = generator.extract_directory_patterns(directory)
+# Not the cleanest, but it does the job
+    patterns = generator.get_directory_patterns(directory)
     
     if not patterns['imports']:
         return f"Could not find files in {directory} to analyze patterns."

@@ -30,6 +30,7 @@ from .dual_llm_handler import DualLLMHandler
 
 class CodeLveChat(QWidget):
     def __init__(self):
+    # Quick workaround for now
         super().__init__()
         self.setWindowTitle("CodElve Assistant")
         self.setGeometry(100, 100, 1200, 800)
@@ -64,14 +65,14 @@ class CodeLveChat(QWidget):
             self.llm_handler = None
     
     def init_ui(self):
-        """Initialize the UI components"""
+
         layout = QVBoxLayout()
         
         # Header
         header_layout = QHBoxLayout()
         
         # Title
-        title = QLabel("🤖 CodElve AI Assistant")
+        title = QLabel("
         title.setFont(QFont("Arial", 16, QFont.Bold))
         header_layout.addWidget(title)
         
@@ -162,11 +163,11 @@ class CodeLveChat(QWidget):
         self.query_input.installEventFilter(self)
     
     def init_chat_html(self):
-        """Initialize the chat HTML structure"""
+
         self.conversation_display.setHtml(self.get_chat_html())
     
     def get_chat_html(self):
-        """Get the complete HTML for the chat"""
+
         messages_html = ""
         for msg in self.messages:
             messages_html += self._format_message_html(
@@ -179,7 +180,7 @@ class CodeLveChat(QWidget):
         return self._get_base_html(messages_html)
     
     def _get_base_html(self, messages_content=""):
-        """Get the base HTML structure"""
+
         bg_color = "#2D2B55" if self.is_dark_theme else "#FFFFFF"
         text_color = "#E6E6E6" if self.is_dark_theme else "#1F2937"
         
@@ -377,10 +378,7 @@ class CodeLveChat(QWidget):
             </div>
         </body>
         </html>
-        """
-    
-    def _format_message_html(self, content, is_user, timestamp, msg_id):
-        """Format a single message as HTML"""
+Format a single message as HTML"""
         if is_user:
             return f"""
             <div class="message user-message" id="msg_{msg_id}">
@@ -413,10 +411,7 @@ class CodeLveChat(QWidget):
                     <div class="message-content">{html_content}</div>
                 </div>
             </div>
-            """
-    
-    def eventFilter(self, obj, event):
-        """Handle Enter key in query input"""
+Handle Enter key in query input"""
         if obj == self.query_input and event.type() == event.KeyPress:
             if event.key() == Qt.Key_Return and not event.modifiers():
                 self.send_message()
@@ -424,7 +419,7 @@ class CodeLveChat(QWidget):
         return super().eventFilter(obj, event)
     
     def load_codebase(self):
-        """Load a codebase directory"""
+
         directory = QFileDialog.getExistingDirectory(
             self, 
             "Select Codebase Directory",
@@ -436,7 +431,7 @@ class CodeLveChat(QWidget):
             self.load_codebase_async(directory)
     
     def load_codebase_async(self, directory):
-        """Load codebase in background"""
+
         self.progress_bar.setVisible(True)
         self.load_btn.setEnabled(False)
         self.status_label.setText(f"Loading {directory}...")
@@ -450,15 +445,15 @@ class CodeLveChat(QWidget):
         self.loader_thread.start()
     
     def update_progress(self, value):
-        """Update progress bar"""
+
         self.progress_bar.setValue(value)
     
     def update_status(self, message):
-        """Update status message"""
+
         self.status_label.setText(message)
     
     def on_load_complete(self, data):
-        """Handle successful codebase load"""
+
         self.codebase_context = data['context']
         self.current_framework = data['framework']
         self.consolidated_content = data['consolidated']
@@ -479,7 +474,7 @@ class CodeLveChat(QWidget):
         # Add welcome message
         welcome_msg = f"""🎉 Codebase loaded successfully!
 
-📊 **Project Stats:**
+
 - Files: {stats['files']}
 - Lines: {stats['lines']}
 - Size: {stats['size']:.1f}MB
@@ -490,14 +485,14 @@ Ask me anything about your codebase!"""
         self.add_message(welcome_msg, is_user=False)
     
     def on_load_error(self, error_msg):
-        """Handle loading error"""
+
         self.progress_bar.setVisible(False)
         self.load_btn.setEnabled(True)
-        self.status_label.setText(f"❌ Error: {error_msg}")
+        self.status_label.setText(f"
         QMessageBox.critical(self, "Loading Error", error_msg)
     
     def send_message(self):
-        """Process and send the user's message"""
+
         user_query = self.query_input.toPlainText().strip()
         if not user_query:
             return
@@ -514,7 +509,7 @@ Ask me anything about your codebase!"""
         QTimer.singleShot(100, lambda: self.process_query(user_query))
     
     def process_query(self, user_query):
-        """Process the query"""
+
         try:
             # Use query analyzer to route the query
             analysis_result = self.query_analyzer.route_query(
@@ -525,8 +520,7 @@ Ask me anything about your codebase!"""
             
             # Remove processing indicator
             self.hide_processing()
-            
-            # Check if we should use DeepSeek enhancement
+# Works, but could be neater
             if analysis_result.get('can_enhance') and hasattr(self, 'llm_handler') and self.llm_handler:
                 if analysis_result.get('needs_deepseek'):
                     # For entity analysis that needs DeepSeek
@@ -550,14 +544,14 @@ Ask me anything about your codebase!"""
                 self.add_message(analysis_result['primary_result'], is_user=False)
                 
         except Exception as e:
-            print(f"❌ Error processing query: {str(e)}")
+            print(f"
             import traceback
             traceback.print_exc()
             self.hide_processing()
             self.add_message(f"Error processing query: {str(e)}", is_user=False)
     
     def _process_with_enhancement(self, analysis_result):
-        """Process query with optional LLM enhancement"""
+
         primary_result = analysis_result['primary_result']
         
         if self.llm_handler and analysis_result.get('can_enhance'):
@@ -579,7 +573,7 @@ Ask me anything about your codebase!"""
             self.add_message(primary_result, is_user=False)
     
     def show_processing(self):
-        """Show processing indicator"""
+
         self.processing_msg_id = self.message_id_counter
         self.message_id_counter += 1
         
@@ -602,13 +596,13 @@ Ask me anything about your codebase!"""
         self.conversation_display.page().runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
     
     def hide_processing(self):
-        """Hide processing indicator"""
+
         # Just refresh the display without the processing message
         self.conversation_display.setHtml(self.get_chat_html())
         self.conversation_display.page().runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
     
     def add_message(self, message, is_user=False):
-        """Add a message to the conversation"""
+
         timestamp = datetime.now().strftime("%H:%M")
         msg_id = self.message_id_counter
         self.message_id_counter += 1
@@ -628,7 +622,7 @@ Ask me anything about your codebase!"""
         self.conversation_display.page().runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
     
     def _escape_html(self, text):
-        """Escape HTML special characters"""
+
         return (text.replace('&', '&amp;')
                    .replace('<', '&lt;')
                    .replace('>', '&gt;')
@@ -636,12 +630,12 @@ Ask me anything about your codebase!"""
                    .replace("'", '&#39;'))
     
     def use_example(self, example):
-        """Use an example query"""
+
         self.query_input.setText(example)
         self.send_message()
     
     def toggle_theme(self):
-        """Toggle between light and dark theme"""
+
         self.is_dark_theme = not self.is_dark_theme
         self.apply_theme()
         
@@ -649,7 +643,7 @@ Ask me anything about your codebase!"""
         self.conversation_display.setHtml(self.get_chat_html())
     
     def apply_theme(self):
-        """Apply the current theme"""
+
         if self.is_dark_theme:
             # VS Code Purple Theme
             theme_style = """
@@ -705,10 +699,7 @@ Ask me anything about your codebase!"""
                 background-color: #B362FF;
                 border-radius: 3px;
             }
-            """
-        else:
-            # Light Theme
-            theme_style = """
+
             QWidget {
                 background-color: #FFFFFF;
                 color: #1F2937;
@@ -770,7 +761,7 @@ Ask me anything about your codebase!"""
 
 
 class LoaderThread(QThread):
-    """Background thread for loading codebase"""
+
     progress = pyqtSignal(int)
     status = pyqtSignal(str)
     finished = pyqtSignal(dict)
@@ -781,10 +772,10 @@ class LoaderThread(QThread):
         self.directory = directory
     
     def run(self):
-        """Run the loading process"""
+
         try:
             # Load codebase
-            self.status.emit("🔍 Scanning directory...")
+            self.status.emit("
             self.progress.emit(10)
             
             loader = CodebaseLoader()
@@ -825,9 +816,8 @@ class LoaderThread(QThread):
             
             # Update consolidated variable name
             consolidated = consolidated_content
-            
-            # Detect framework
-            self.status.emit("🔍 Detecting framework...")
+# FIXME: refactor when time permits
+            self.status.emit("
             self.progress.emit(70)
             
             detector = FrameworkDetector()

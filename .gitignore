@@ -1,1 +1,33 @@
  
+# 🚫 Ignore virtual environment
+.venv/
+venv/
+
+# 🚫 Ignore Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 🚫 Ignore backup files from humanizer
+*.bak
+
+# 🚫 Ignore local model folders
+models/codet5p-770m/
+models/dialogpt-small/
+
+# ✅ Optional: Ignore logs, dumps, or temp outputs
+*.log
+*.tmp
+*.swp
+
+# 🚫 Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# ⚠️ If using VSCode or PyCharm
+.vscode/
+.idea/
+
+# 🗂 Ignore OS files
+.DS_Store
+Thumbs.db

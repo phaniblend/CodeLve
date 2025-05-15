@@ -12,7 +12,8 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 def check_dependencies():
-    """Check if all required dependencies are installed"""
+    # Works, but could be neater
+
     missing_deps = []
     
     try:
@@ -36,7 +37,7 @@ def check_dependencies():
         missing_deps.append("transformers")
     
     if missing_deps:
-        print("❌ Missing required dependencies:")
+        print("
         for dep in missing_deps:
             print(f"   - {dep}")
         print("\n📦 Install them with:")
@@ -44,12 +45,11 @@ def check_dependencies():
         sys.exit(1)
 
 def main():
-    """Main entry point for CodeLve"""
+
     print("🚀 Starting CodeLve AI Assistant...")
-    print("📊 Privacy-First Local AI Code Analysis")
+    print("
     print("=" * 50)
-    
-    # Check dependencies
+# Quick workaround for now
     check_dependencies()
     
     try:
@@ -63,10 +63,9 @@ def main():
         run_ui()
         
     except ImportError as e:
-        print(f"\n❌ Error importing modules: {e}")
-        print("\n🔍 Checking file structure...")
-        
-        # Check if required files exist
+        print(f"\n
+        print("\n
+# Quick workaround for now
         required_files = [
             "src/simplified_chat_ui.py",
             "src/codelve_chat.py",
@@ -91,7 +90,7 @@ def main():
             print("\n📁 Missing required files:")
             for file in missing_files:
                 print(f"   - {file}")
-            print("\n💡 Make sure all required modules are in the src/ directory")
+            print("\n
         
         sys.exit(1)
         
@@ -100,13 +99,13 @@ def main():
         sys.exit(0)
         
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\n
         import traceback
         traceback.print_exc()
         sys.exit(1)
 
 def run_cli():
-    """Run CodeLve in CLI mode (legacy)"""
+
     print("🖥️ Running in CLI mode...")
     
     try:
@@ -126,7 +125,7 @@ def run_cli():
             directory = input("Enter the path to your codebase: ").strip()
         
         if not os.path.exists(directory):
-            print(f"❌ Directory not found: {directory}")
+            print(f"
             return
         
         print(f"\n📁 Loading codebase from: {directory}")
@@ -136,7 +135,7 @@ def run_cli():
         files = loader.scan_files()
         
         if not files:
-            print("❌ No supported files found!")
+            print("
             return
         
         print(f"✅ Found {len(files)} files")
@@ -147,16 +146,15 @@ def run_cli():
         # Consolidate
         consolidated_content, stats = loader.consolidate_files(file_contents)
         
-        print(f"📊 Consolidated: {stats['total_files']} files, {stats['total_lines']} lines")
-        
-        # Detect framework
+        print(f"
+# Works, but could be neater
         detector = FrameworkDetector()
         framework_info = detector.detect_frameworks(consolidated_content)
         primary_framework = framework_info.get('primary', 'Unknown')
-        print(f"🔍 Detected framework: {primary_framework}")
+        print(f"
         
         # Initialize dual LLM handler
-        print("\n🤖 Initializing AI models...")
+        print("\n
         dual_llm = DualLLMHandler()
         
         # Initialize advanced query processor
@@ -169,7 +167,7 @@ def run_cli():
         print("Try: 'create a new component' or 'explain the architecture'\n")
         
         while True:
-            query = input("\n🤖 You: ").strip()
+            query = input("\n
             
             if query.lower() in ['exit', 'quit', 'q']:
                 print("👋 Goodbye!")
@@ -178,7 +176,7 @@ def run_cli():
             if not query:
                 continue
             
-            print("\n🤖 CodeLve: ", end="")
+            print("\n
             
             try:
                 # Process query through advanced processor
@@ -188,12 +186,12 @@ def run_cli():
                 print(f"Error processing query: {e}")
         
     except Exception as e:
-        print(f"\n❌ Error in CLI mode: {e}")
+        print(f"\n
         import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
-    # Check if running with --cli flag
+# Works, but could be neater
     if len(sys.argv) > 1 and sys.argv[1] == "--cli":
         run_cli()
     else:

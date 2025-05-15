@@ -3,20 +3,21 @@ from typing import Dict, List, Set, Optional, Tuple
 from pathlib import Path
 
 class ContextManager:
-    """Smart context management for codebase queries"""
+
     
     def __init__(self):
+    # TODO: revisit this later
         self.codebase_data = None
         self.file_index = {}  # filename -> file_info mapping
         self.content_index = {}  # keywords -> files mapping
     
     def load_codebase(self, scan_result: Dict):
-        """Load codebase and build search indexes"""
+
         self.codebase_data = scan_result
         self._build_indexes()
     
     def _build_indexes(self):
-        """Build search indexes for fast file lookup"""
+
         self.file_index = {}
         self.content_index = {}
         
@@ -35,7 +36,7 @@ class ContextManager:
                     self.content_index[word].append(file_info)
     
     def find_relevant_files(self, query: str, max_files: int = 10) -> List[Dict]:
-        """Find files most relevant to the query"""
+
         if not self.codebase_data:
             return []
         
@@ -74,7 +75,7 @@ class ContextManager:
         return [f for f in self.codebase_data['files'] if f['path'] in relevant_paths]
     
     def get_context_summary(self) -> Dict:
-        """Get summary of current codebase context"""
+
         if not self.codebase_data:
             return {}
         
@@ -86,7 +87,7 @@ class ContextManager:
         }
     
     def search_codebase(self, search_term: str) -> List[Dict]:
-        """Search for specific term across codebase"""
+
         results = []
         search_lower = search_term.lower()
         
@@ -117,18 +118,18 @@ class ContextManager:
         return results[:20]  # Limit total results
     
     def _get_line_context(self, lines: List[str], line_index: int, context_size: int = 2) -> List[str]:
-        """Get surrounding lines for context"""
+
         start = max(0, line_index - context_size)
         end = min(len(lines), line_index + context_size + 1)
         return lines[start:end]
     
     def _is_query_language_specific(self, query: str) -> bool:
-        """Check if query mentions specific programming language"""
+
         languages = ['python', 'javascript', 'java', 'cpp', 'html', 'css', 'sql']
         return any(lang in query.lower() for lang in languages)
     
     def _detect_query_language(self, query: str) -> str:
-        """Detect which language the query is about"""
+
         lang_keywords = {
             'python': ['python', 'py', 'django', 'flask'],
             'javascript': ['javascript', 'js', 'react', 'node', 'vue'],

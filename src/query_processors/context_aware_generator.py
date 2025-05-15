@@ -11,7 +11,7 @@ from query_processors.codebase_pattern_extractor import CodebasePatternExtractor
 
 
 class ContextAwareGenerator:
-    """Generate code that perfectly fits the existing codebase patterns"""
+
     
     def __init__(self, consolidated_code: str):
         self.pattern_extractor = CodebasePatternExtractor(consolidated_code)
@@ -19,9 +19,7 @@ class ContextAwareGenerator:
         self.consolidated_code = consolidated_code
     
     def generate_component(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate a component that matches existing patterns"""
-        
-        # Determine component style from patterns
+# Might need cleanup
         component_style = self.patterns['component_patterns'].get('style', 'functional')
         common_hooks = self.patterns['component_patterns'].get('common_hooks', [])
         prop_patterns = self.patterns['component_patterns'].get('prop_patterns', {})
@@ -43,10 +41,10 @@ class ContextAwareGenerator:
             )
     
     def generate_service(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate a service matching existing service patterns"""
+
         
         # Find existing service patterns
-        service_patterns = self._analyze_service_patterns()
+        service_patterns = self._check_service_patterns()
         
         # Get API patterns
         api_patterns = self.patterns['api_patterns']
@@ -55,10 +53,10 @@ class ContextAwareGenerator:
         return self._generate_service_class(name, specs, service_patterns, api_patterns)
     
     def generate_api_endpoint(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate API endpoint matching existing patterns"""
+
         
         # Analyze existing endpoints
-        endpoint_patterns = self._analyze_endpoint_patterns()
+        endpoint_patterns = self._check_endpoint_patterns()
         
         # Get framework (Express, FastAPI, etc.)
         framework = self._detect_api_framework()
@@ -66,7 +64,7 @@ class ContextAwareGenerator:
         return self._generate_api_endpoint_code(name, specs, endpoint_patterns, framework)
     
     def generate_test(self, name: str, target: str, specs: Optional[Dict] = None) -> str:
-        """Generate test matching existing test patterns"""
+
         
         test_patterns = self.patterns['test_patterns']
         framework = test_patterns.get('framework', 'jest')
@@ -74,20 +72,19 @@ class ContextAwareGenerator:
         return self._generate_test_code(name, target, specs, test_patterns, framework)
     
     def generate_model(self, name: str, specs: Optional[Dict] = None) -> str:
-        """Generate model/interface matching existing patterns"""
+
         
-        model_patterns = self._analyze_model_patterns()
+        model_patterns = self._check_model_patterns()
         
         return self._generate_model_code(name, specs, model_patterns)
     
     def _generate_functional_component(self, name, specs, hooks, prop_patterns, styling, state_mgmt):
-        """Generate functional component matching project patterns"""
+
         
         # Get import template
         imports_needed = self._determine_needed_imports(specs, hooks, styling, state_mgmt)
         import_section = self.pattern_extractor.get_import_template(imports_needed)
-        
-        # Determine props interface based on patterns
+# Quick workaround for now
         props_interface = self._generate_props_interface(name, specs, prop_patterns)
         
         # Component structure based on project patterns
@@ -125,8 +122,7 @@ class ContextAwareGenerator:
         
         # Add styling based on project patterns
         code += self._add_styling_setup(styling)
-        
-        # Return statement matching project patterns
+# Not the cleanest, but it does the job
         code += "\n  return (\n"
         code += self._generate_jsx_template(name, styling, specs)
         code += "  );\n"
@@ -136,7 +132,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_class_component(self, name, specs, prop_patterns, styling, state_mgmt):
-        """Generate class component matching project patterns"""
+
         
         imports_needed = self._determine_needed_imports(specs, [], styling, state_mgmt)
         import_section = self.pattern_extractor.get_import_template(imports_needed)
@@ -177,9 +173,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_service_class(self, name, specs, service_patterns, api_patterns):
-        """Generate service class based on existing patterns"""
-        
-        # Detect if using TypeScript
+# TODO: revisit this later
         is_typescript = '.ts' in str(self.patterns) or 'interface' in self.consolidated_code
         
         # Get common service imports
@@ -211,7 +205,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_api_endpoint_code(self, name, specs, endpoint_patterns, framework):
-        """Generate API endpoint based on framework"""
+
         
         if framework == 'express':
             return self._generate_express_endpoint(name, specs, endpoint_patterns)
@@ -223,7 +217,7 @@ class ContextAwareGenerator:
             return self._generate_generic_endpoint(name, specs)
     
     def _generate_test_code(self, name, target, specs, test_patterns, framework):
-        """Generate test code based on testing framework"""
+
         
         if framework == 'jest':
             return self._generate_jest_test(name, target, specs, test_patterns)
@@ -233,9 +227,7 @@ class ContextAwareGenerator:
             return self._generate_generic_test(name, target, specs)
     
     def _generate_model_code(self, name, specs, model_patterns):
-        """Generate model/interface based on patterns"""
-        
-        # Detect if TypeScript interfaces or classes
+# Quick workaround for now
         use_interface = 'interface' in str(model_patterns)
         
         if use_interface:
@@ -244,7 +236,7 @@ class ContextAwareGenerator:
             return self._generate_model_class(name, specs, model_patterns)
     
     def _determine_needed_imports(self, specs, hooks, styling, state_mgmt):
-        """Determine imports needed based on component requirements"""
+
         
         imports = []
         
@@ -290,7 +282,7 @@ class ContextAwareGenerator:
         return imports
     
     def _generate_props_interface(self, name, specs, prop_patterns):
-        """Generate TypeScript props interface"""
+
         
         if not self._is_typescript():
             return ""
@@ -314,7 +306,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_state_interface(self, name, specs):
-        """Generate TypeScript state interface"""
+
         
         if not self._is_typescript():
             return ""
@@ -335,7 +327,7 @@ class ContextAwareGenerator:
         return code
     
     def _add_common_hooks(self, hooks, specs):
-        """Add common hooks based on patterns"""
+
         
         code = ""
         
@@ -356,7 +348,7 @@ class ContextAwareGenerator:
         return code + "\n" if code else ""
     
     def _add_custom_hooks(self, name, specs):
-        """Add custom hooks if detected in patterns"""
+
         
         custom_hooks = self._find_custom_hooks()
         code = ""
@@ -368,7 +360,7 @@ class ContextAwareGenerator:
         return code + "\n" if code else ""
     
     def _add_event_handlers(self, name, specs):
-        """Add event handlers based on component type"""
+
         
         code = ""
         
@@ -387,7 +379,7 @@ class ContextAwareGenerator:
         return code
     
     def _add_api_calls(self, name, specs):
-        """Add API call patterns"""
+
         
         api_method = self.patterns['api_patterns'].get('method', 'fetch')
         code = ""
@@ -408,7 +400,7 @@ class ContextAwareGenerator:
         return code
     
     def _add_styling_setup(self, styling):
-        """Add styling setup based on method"""
+
         
         if styling == 'styled-components':
             return "\n  // Styled components would be defined outside\n"
@@ -418,9 +410,7 @@ class ContextAwareGenerator:
             return ""
     
     def _generate_jsx_template(self, name, styling, specs):
-        """Generate JSX matching project patterns"""
-        
-        # Check for common UI library patterns
+# TODO: revisit this later
         ui_library = self._detect_ui_library()
         
         if specs and specs.get('type') == 'form':
@@ -433,7 +423,7 @@ class ContextAwareGenerator:
             return self._generate_default_jsx(name, styling, ui_library)
     
     def _generate_form_jsx(self, name, styling, ui_library):
-        """Generate form JSX based on patterns"""
+
         
         if ui_library == 'material-ui':
             return '''    <Box component="form" onSubmit={handleSubmit}>
@@ -463,7 +453,7 @@ class ContextAwareGenerator:
     </form>\n'''
     
     def _generate_list_jsx(self, name, styling, ui_library):
-        """Generate list JSX based on patterns"""
+
         
         return f'''    <div className="{self._get_class_name('list-container', styling)}">
       <h2>{name}</h2>
@@ -475,7 +465,7 @@ class ContextAwareGenerator:
     </div>\n'''
     
     def _generate_modal_jsx(self, name, styling, ui_library):
-        """Generate modal JSX based on patterns"""
+
         
         if ui_library == 'material-ui':
             return '''    <Dialog open={open} onClose={handleClose}>
@@ -500,7 +490,7 @@ class ContextAwareGenerator:
     </div>\n'''
     
     def _generate_default_jsx(self, name, styling, ui_library):
-        """Generate default JSX"""
+
         
         if styling == 'tailwind':
             return f'''    <div className="container mx-auto p-4">
@@ -519,7 +509,7 @@ class ContextAwareGenerator:
     </div>\n'''
     
     def _get_service_imports(self, api_patterns):
-        """Get service imports based on API patterns"""
+
         
         imports = []
         
@@ -533,7 +523,7 @@ class ContextAwareGenerator:
         return '\n'.join(imports)
     
     def _generate_service_method(self, method_name, api_patterns):
-        """Generate a service method"""
+
         
         if api_patterns.get('method') == 'axios':
             return f'''  async {method_name}(params?: any) {{
@@ -551,7 +541,7 @@ class ContextAwareGenerator:
   }}\n\n'''
     
     def _generate_crud_methods(self, name, api_patterns):
-        """Generate standard CRUD methods"""
+
         
         resource = name.lower()
         code = ""
@@ -584,7 +574,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_express_endpoint(self, name, specs, patterns):
-        """Generate Express endpoint"""
+
         
         method = specs.get('method', 'get').lower() if specs else 'get'
         path = specs.get('path', f'/{name.lower()}') if specs else f'/{name.lower()}'
@@ -612,7 +602,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_jest_test(self, name, target, specs, patterns):
-        """Generate Jest test"""
+
         
         code = f'''describe('{target}', () => {{
   beforeEach(() => {{
@@ -638,7 +628,7 @@ class ContextAwareGenerator:
         return code
     
     def _generate_typescript_interface(self, name, specs, patterns):
-        """Generate TypeScript interface"""
+
         
         code = f"export interface {name} {{\n"
         
@@ -658,11 +648,11 @@ class ContextAwareGenerator:
     # Helper methods
     
     def _is_typescript(self):
-        """Check if project uses TypeScript"""
+
         return '.ts' in self.consolidated_code or '.tsx' in self.consolidated_code
     
     def _detect_ui_library(self):
-        """Detect UI library used"""
+
         if '@mui' in self.consolidated_code or 'material-ui' in self.consolidated_code:
             return 'material-ui'
         elif 'antd' in self.consolidated_code:
@@ -672,11 +662,11 @@ class ContextAwareGenerator:
         return None
     
     def _get_class_name(self, base_class, styling):
-        """Get class name based on styling method"""
+
         if styling == 'css-modules':
             return f"{{styles.{self._camelCase(base_class)}}}"
         elif styling == 'tailwind':
-            # Return tailwind classes
+# Not the cleanest, but it does the job
             if base_class == 'container':
                 return 'container mx-auto p-4'
             elif base_class == 'form-group':
@@ -685,31 +675,31 @@ class ContextAwareGenerator:
         return base_class
     
     def _capitalize(self, text):
-        """Capitalize first letter"""
+
         return text[0].upper() + text[1:] if text else ''
     
     def _camelCase(self, text):
-        """Convert to camelCase"""
+
         parts = text.split('-')
         return parts[0] + ''.join(p.capitalize() for p in parts[1:])
     
-    def _analyze_service_patterns(self):
-        """Analyze existing service patterns"""
+    def _check_service_patterns(self):
+
         # Implementation to analyze service patterns
         return {}
     
-    def _analyze_endpoint_patterns(self):
-        """Analyze existing endpoint patterns"""
+    def _check_endpoint_patterns(self):
+
         # Implementation to analyze endpoint patterns
         return {}
     
-    def _analyze_model_patterns(self):
-        """Analyze existing model patterns"""
+    def _check_model_patterns(self):
+
         # Implementation to analyze model patterns
         return {}
     
     def _detect_api_framework(self):
-        """Detect API framework"""
+
         if 'express' in self.consolidated_code:
             return 'express'
         elif 'fastapi' in self.consolidated_code:
@@ -719,17 +709,17 @@ class ContextAwareGenerator:
         return 'unknown'
     
     def _find_custom_hooks(self):
-        """Find custom hooks in the codebase"""
+
         # Implementation to find custom hooks
         return []
     
     def _should_use_hook(self, hook, component_name, specs):
-        """Determine if a hook should be used"""
+
         # Implementation to determine hook usage
         return False
     
     def _infer_prop_type(self, prop, patterns):
-        """Infer TypeScript type for prop"""
+
         # Common patterns
         if 'id' in prop.lower():
             return 'string'
@@ -742,7 +732,7 @@ class ContextAwareGenerator:
         return 'any'
     
     def _infer_state_type(self, state_var):
-        """Infer TypeScript type for state variable"""
+
         if 'loading' in state_var.lower():
             return 'boolean'
         elif 'error' in state_var.lower():
@@ -752,7 +742,7 @@ class ContextAwareGenerator:
         return 'any'
     
     def _get_initial_value(self, state_var):
-        """Get initial value for state variable"""
+
         if 'loading' in state_var.lower():
             return 'false'
         elif 'error' in state_var.lower():
@@ -764,12 +754,12 @@ class ContextAwareGenerator:
         return '""'
     
     def _find_common_service_imports(self):
-        """Find common service imports"""
+
         # Implementation to find common imports
         return []
     
     def _add_lifecycle_methods(self, specs):
-        """Add lifecycle methods for class components"""
+
         code = ""
         
         if specs and specs.get('hasApiCalls'):
@@ -780,7 +770,7 @@ class ContextAwareGenerator:
         return code
     
     def _add_class_methods(self, name, specs):
-        """Add methods to class component"""
+
         code = ""
         
         if specs and specs.get('hasApiCalls'):
@@ -791,33 +781,29 @@ class ContextAwareGenerator:
         return code
     
     def _generate_fastapi_endpoint(self, name, specs, patterns):
-        """Generate FastAPI endpoint"""
+
         method = specs.get('method', 'get').lower() if specs else 'get'
         path = specs.get('path', f'/{name.lower()}') if specs else f'/{name.lower()}'
         
         return f'''@router.{method}("{path}")
 async def {name}():
-    """
-    {name} endpoint
-    """
+
     # Implementation
     return {{"message": "Success"}}'''
     
     def _generate_flask_endpoint(self, name, specs, patterns):
-        """Generate Flask endpoint"""
+
         method = specs.get('method', 'GET').upper() if specs else 'GET'
         path = specs.get('path', f'/{name.lower()}') if specs else f'/{name.lower()}'
         
         return f'''@app.route('{path}', methods=['{method}'])
 def {name}():
-    """
-    {name} endpoint
-    """
+
     # Implementation
     return jsonify({{"message": "Success"}})'''
     
     def _generate_generic_endpoint(self, name, specs):
-        """Generate generic endpoint"""
+
         return f'''// {name} endpoint
 function {name}(req, res) {{
     // Implementation
@@ -825,7 +811,7 @@ function {name}(req, res) {{
 }}'''
     
     def _generate_rtl_test(self, name, target, specs, patterns):
-        """Generate React Testing Library test"""
+
         return f'''import {{ render, screen }} from '@testing-library/react';
 import {target} from './{target}';
 
@@ -839,7 +825,7 @@ describe('{target}', () => {{
 }});'''
     
     def _generate_generic_test(self, name, target, specs):
-        """Generate generic test"""
+
         return f'''// Test for {target}
 test('{name}', () => {{
     // Test implementation
@@ -847,7 +833,7 @@ test('{name}', () => {{
 }});'''
     
     def _generate_model_class(self, name, specs, patterns):
-        """Generate model class"""
+
         return f'''class {name} {{
     constructor() {{
         // Initialize model
@@ -859,7 +845,7 @@ test('{name}', () => {{
 export default {name};'''
     
     def get_patterns_used(self):
-        """Get summary of patterns used in generation"""
+
         return {
             'style': self.patterns['component_patterns'].get('style', 'functional'),
             'state': 'redux' if self.patterns['state_patterns'].get('redux') else 'local',
@@ -869,7 +855,7 @@ export default {name};'''
         }
     
     def _get_applied_patterns(self):
-        """Get list of patterns applied"""
+
         patterns = []
         
         if self.patterns['component_patterns'].get('common_hooks'):
