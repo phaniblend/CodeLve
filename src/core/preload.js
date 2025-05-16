@@ -16,8 +16,11 @@ contextBridge.exposeInMainWorld(
     maximizeWindow: () => ipcRenderer.send('window-maximize'),
     closeWindow: () => ipcRenderer.send('window-close'),
     
+    // External links
+    openExternal: (url) => ipcRenderer.invoke('open-external', url),
+    
     // AI Service methods
-    getOllamaStatus: () => ipcRenderer.invoke('get-ollama-status'),
+    getOllamaStatus: () => ipcRenderer.invoke('get-ollama-status'), // Keep name for compatibility
     queryAI: (params) => ipcRenderer.invoke('query-ai', params),
     
     // File system operations

@@ -1,9 +1,16 @@
+renderer.js : 544 lines
 ai\ollama-service.js : 343 lines
+ai\huggingface-service.js : 340 lines
 chat\chat-panel.js : 290 lines
+core\main.js : 290 lines
 ide\ide-launcher.js : 252 lines
 chat\chat-panel.css : 234 lines
+context\code-context-provider.js : 217 lines
 core\process-manager.js : 215 lines
-core\main.js : 122 lines
-core\preload.js : 37 lines
+ide\codium-bridge.js : 206 lines
+index.html : 186 lines
+ui\main-layout.css : 180 lines
+ui\main-layout.js : 138 lines
+core\preload.js : 49 lines
 
-Total Line Count: 1493 lines
+Total Line Count: 3484 lines

@@ -309,25 +309,78 @@ class OllamaService {
     }
   }
 
-  /**
-   * Prepare a full prompt including context
-   * 
-   * @param {string} prompt User prompt
-   * @param {string} context Code context
-   * @returns {string} Full prompt
-   */
-  preparePrompt(prompt, context) {
-    let fullPrompt = "You are CodeLve, an AI assistant that helps developers understand and modify code. ";
-    fullPrompt += "You analyze code and provide clear, concise explanations and suggestions. ";
-    fullPrompt += "When asked to create new code files or components, provide complete, well-structured code that follows best practices.";
+ /**
+ * Prepare a full prompt including context
+ * 
+ * @param {string} prompt User prompt
+ * @param {string} context Code context
+ * @returns {string} Full prompt
+ */
+preparePrompt(prompt, context) {
+  let fullPrompt = "You are CodeLve, an AI assistant that helps developers understand and modify code. ";
+  fullPrompt += "You are an expert programmer with deep knowledge of software development, algorithms, and best practices. ";
+  fullPrompt += "You excel at analyzing code, explaining concepts, fixing bugs, and generating new code.";
+  
+  fullPrompt += "\n\nWhen responding to code questions:";
+  fullPrompt += "\n- Provide clear, concise explanations";
+  fullPrompt += "\n- Highlight potential bugs or improvements";
+  fullPrompt += "\n- Use code examples to illustrate concepts";
+  
+  fullPrompt += "\n\nWhen generating code:";
+  fullPrompt += "\n- Create complete, well-structured solutions";
+  fullPrompt += "\n- Follow language-specific best practices and style guides";
+  fullPrompt += "\n- Include helpful comments";
+  fullPrompt += "\n- Consider edge cases and error handling";
+  
+  if (context && context.trim()) {
+    fullPrompt += "\n\nCODE CONTEXT:\n```\n" + context + "\n```\n\n";
+    // Detect language based on context
+    const fileExtension = context.includes("File:") ? 
+      context.split("File:")[1].trim().split("\n")[0].split(".").pop() : "";
     
-    if (context && context.trim()) {
-      fullPrompt += "\n\nCODE CONTEXT:\n```\n" + context + "\n```\n\n";
+    if (fileExtension) {
+      fullPrompt += `\nThe code appears to be in ${this.getLanguageName(fileExtension)}. `;
+      fullPrompt += "Please consider language-specific features and best practices in your response.";
     }
-    
-    fullPrompt += "USER QUERY: " + prompt;
-    return fullPrompt;
   }
+  
+  fullPrompt += "\n\nUSER QUERY: " + prompt;
+  return fullPrompt;
+}
+
+/**
+ * Get a human-readable language name from file extension
+ * 
+ * @param {string} extension File extension
+ * @returns {string} Language name
+ */
+getLanguageName(extension) {
+  const languageMap = {
+    "js": "JavaScript",
+    "ts": "TypeScript",
+    "py": "Python",
+    "java": "Java",
+    "c": "C",
+    "cpp": "C++",
+    "cs": "C#",
+    "php": "PHP",
+    "rb": "Ruby",
+    "go": "Go",
+    "rs": "Rust",
+    "swift": "Swift",
+    "kt": "Kotlin",
+    "html": "HTML",
+    "css": "CSS",
+    "json": "JSON",
+    "md": "Markdown",
+    "sql": "SQL",
+    "sh": "Shell/Bash",
+    "jsx": "React JSX",
+    "tsx": "React TSX"
+  };
+  
+  return languageMap[extension.toLowerCase()] || extension;
+}
 
   /**
    * Shutdown the Ollama service

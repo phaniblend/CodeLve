@@ -1,8 +1,12 @@
+/**
+ * CodeLve - AI-Powered Integrated Development Environment
+ * Main entry point for the application
+ */
 
 // Core dependencies
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const isDev = require('electron-is-dev');
 const Store = require('electron-store');
 
@@ -16,8 +20,7 @@ const CodeContextProvider = require('../context/code-context-provider');
 // Global references
 let mainWindow = null;
 const processManager = new ProcessManager();
-let ollamaService = null;
-let ideLauncher = null;
+let aiService = null; // Using Ollama for local LLM support
 let codiumBridge = null;
 let codeContextProvider = null;
 
@@ -55,13 +58,12 @@ function createMainWindow() {
     frame: false // Frameless window for custom title bar
   });
 
- // Load the UI
-// Load the UI
-const htmlPath = path.join(__dirname, '..', '..', 'src', 'index.html');
-console.log('Loading HTML from:', htmlPath);
-const startUrl = `file://${htmlPath}`;
-  
-mainWindow.loadURL(startUrl);
+  // Load the UI
+  const htmlPath = path.join(__dirname, '..', '..', 'src', 'index.html');
+  console.log('Loading HTML from:', htmlPath);
+  const startUrl = `file://${htmlPath}`;
+    
+  mainWindow.loadURL(startUrl);
 
   // Show when ready
   mainWindow.once('ready-to-show', () => {
@@ -123,23 +125,32 @@ async function initializeApp() {
     // Initialize code context provider
     codeContextProvider = new CodeContextProvider();
     
-    // Initialize Ollama service
-    ollamaService = new OllamaService();
-    ollamaService.modelName = settings.get('modelName');
-    const ollamaReady = await ollamaService.initialize();
+    // Initialize AI service (using Ollama)
+aiService = new OllamaService();
+const aiReady = await aiService.initialize();
     
-    if (!ollamaReady) {
-      console.error('Failed to initialize Ollama service');
+    if (!aiReady) {
+      console.error('Failed to initialize AI service');
       // Continue anyway, will show error in UI
     }
     
-    // Initialize IDE components
-    ideLauncher = new IDELauncher();
-    await ideLauncher.initialize(processManager);
-    
-    // Initialize VSCodium bridge
-    codiumBridge = new CodiumBridge(ideLauncher);
-    await codiumBridge.initialize();
+    // Initialize IDE components (optional)
+    let ideAvailable = false;
+    try {
+      ideLauncher = new IDELauncher();
+      ideAvailable = await ideLauncher.initialize(processManager);
+      
+      if (ideAvailable) {
+        // Initialize VSCodium bridge
+        codiumBridge = new CodiumBridge(ideLauncher);
+        await codiumBridge.initialize();
+      } else {
+        console.log('VSCodium not available, running in limited mode');
+      }
+    } catch (error) {
+      console.error('Error initializing IDE:', error);
+      // Continue without IDE integration
+    }
     
     // Create main window
     createMainWindow();
@@ -160,13 +171,13 @@ async function initializeApp() {
 function setupIPCHandlers() {
   // AI Service handlers
   ipcMain.handle('get-ollama-status', async () => {
-    if (!ollamaService) return { running: false, error: 'Service not initialized' };
-    return ollamaService.getStatus();
+    if (!aiService) return { running: false, error: 'Service not initialized' };
+    return aiService.getStatus();
   });
 
   ipcMain.handle('query-ai', async (event, { prompt, context }) => {
-    if (!ollamaService) return { error: 'AI service not available' };
-    return ollamaService.processQuery(prompt, context);
+    if (!aiService) return { error: 'AI service not available' };
+    return aiService.processQuery(prompt, context);
   });
   
   // File system handlers
@@ -222,6 +233,17 @@ function setupIPCHandlers() {
     return dialog.showSaveDialog(mainWindow, options);
   });
   
+  // Open external URLs
+  ipcMain.handle('open-external', async (event, url) => {
+    try {
+      await shell.openExternal(url);
+      return true;
+    } catch (error) {
+      console.error('Error opening external URL:', error);
+      return false;
+    }
+  });
+  
   // Settings handlers
   ipcMain.handle('get-settings', () => {
     return settings.store;
@@ -255,9 +277,9 @@ app.on('will-quit', async () => {
   // Shut down all managed processes
   await processManager.shutdownAll();
   
-  // Cleanup Ollama service
-  if (ollamaService) {
-    await ollamaService.shutdown();
+  // Cleanup AI service
+  if (aiService) {
+    await aiService.shutdown();
   }
   
   // Disconnect VSCodium bridge
