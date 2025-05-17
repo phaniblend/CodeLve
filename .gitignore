@@ -27,4 +27,6 @@ yarn-error.log*
 /out
 
 # Ollama models directory
-/models
+/modelsresources/bin/ 
+resources/llama-b5410-bin-win-cpu-x64/ 
+resources/llama-b5410-bin-win-cpu-x64.zip 
