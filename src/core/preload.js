@@ -20,7 +20,8 @@ contextBridge.exposeInMainWorld(
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
     
     // AI Service methods
-    getOllamaStatus: () => ipcRenderer.invoke('get-ollama-status'), // Keep name for compatibility
+    getAIStatus: () => ipcRenderer.invoke('get-ai-status'), // New API name
+    getOllamaStatus: () => ipcRenderer.invoke('get-ollama-status'), // Keep old name for compatibility
     queryAI: (params) => ipcRenderer.invoke('query-ai', params),
     
     // File system operations

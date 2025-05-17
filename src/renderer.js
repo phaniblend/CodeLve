@@ -77,8 +77,8 @@ async function initializeApp() {
     // We'll interact with it through IPC
 
     // IDE integration is disabled for now while we focus on AI functionality
-console.log("VSCodium integration disabled for testing, running in AI-only mode");
-let ideAvailable = false;
+    console.log("Lite XL integration disabled for testing, running in AI-only mode");
+    let ideAvailable = false;
 
     // Create main window
     createMainWindow();
@@ -88,22 +88,25 @@ let ideAvailable = false;
 
     console.log("CodeLve started successfully");
   } catch (error) {
-  console.error("Error initializing CodeLve:", error);
-  if (window.api && window.api.closeWindow) {
-    window.api.closeWindow();
-  } else {
-    console.error('Unable to close window through API');
+    console.error("Error initializing CodeLve:", error);
+    if (window.api && window.api.closeWindow) {
+      window.api.closeWindow();
+    } else {
+      console.error('Unable to close window through API');
+    }
   }
-}
 }
 
 /**
  * Update AI service status
  */
 async function updateAIStatus() {
-  if (window.api && window.api.getOllamaStatus) {
+  // Try new API name first, fall back to old one for compatibility
+  const statusApi = window.api?.getAIStatus || window.api?.getOllamaStatus;
+  
+  if (window.api && statusApi) {
     try {
-      const status = await window.api.getOllamaStatus();
+      const status = await statusApi();
       updateStatusIndicators(status);
       
       // If not ready, check again in 5 seconds
@@ -118,6 +121,7 @@ async function updateAIStatus() {
     updateStatusIndicators({ running: false, error: "API not available" });
   }
 }
+
 /**
  * Setup IPC handlers for renderer-to-main communication
  */
@@ -125,6 +129,7 @@ function setupIPCHandlers() {
   console.log("Setting up IPC handlers");
   
 }
+
 function createMainWindow() {
   console.log("Creating main window components");
 
@@ -139,7 +144,7 @@ function createMainWindow() {
 }
 
 /**
- * Create editor placeholder when VSCodium is not available
+ * Create editor placeholder when Lite XL is not available
  *
  * @param {Element} container Editor container element
  */
@@ -152,11 +157,11 @@ function createEditorPlaceholder(container) {
     <h2 class="editor-placeholder-title">Editor Not Available</h2>
     <p class="editor-placeholder-text">
       The integrated editor component is not available. 
-      CodeLve works best with VSCodium installed. 
+      CodeLve works best with Lite XL installed. 
       You can still use the AI assistant to answer questions and generate code.
     </p>
     <button class="editor-placeholder-button" id="install-editor-button">
-      Install VSCodium
+      Install Lite XL
     </button>
   `;
 
@@ -167,9 +172,9 @@ function createEditorPlaceholder(container) {
     .getElementById("install-editor-button")
     ?.addEventListener("click", () => {
       if (window.api && window.api.openExternal) {
-        window.api.openExternal("https://vscodium.com/");
+        window.api.openExternal("https://lite-xl.com/");
       } else {
-        window.open("https://vscodium.com/", "_blank");
+        window.open("https://lite-xl.com/", "_blank");
       }
     });
 }
@@ -594,7 +599,7 @@ function updateStatusIndicators(status) {
 
   if (ideIndicator && ideText) {
     ideIndicator.className = "status-indicator offline";
-    ideText.textContent = "IDE not connected";
+    ideText.textContent = "Lite XL not connected";
   }
 }
 

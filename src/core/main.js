@@ -12,16 +12,15 @@ const Store = require('electron-store');
 
 // Custom modules
 const ProcessManager = require('./process-manager');
-const IDELauncher = require('../ide/ide-launcher');
-const CodiumBridge = require('../ide/codium-bridge');
-const OllamaService = require('../ai/ollama-service');
+const coditor = require('../editor/coditor-bridge');
+const LlamaService = require('../ai/llama-process-service');
 const CodeContextProvider = require('../context/code-context-provider');
 
 // Global references
 let mainWindow = null;
 const processManager = new ProcessManager();
-let aiService = null; // Using Ollama for local LLM support
-let codiumBridge = null;
+let aiService = null; // Using llama.cpp for local LLM support
+let editorBridge = null;
 let codeContextProvider = null;
 
 // Settings store
@@ -125,31 +124,30 @@ async function initializeApp() {
     // Initialize code context provider
     codeContextProvider = new CodeContextProvider();
     
-    // Initialize AI service (using Ollama)
-aiService = new OllamaService();
-const aiReady = await aiService.initialize();
+    // Initialize AI service (using llama.cpp)
+    aiService = new LlamaService();
+    const aiReady = await aiService.initialize();
     
     if (!aiReady) {
       console.error('Failed to initialize AI service');
       // Continue anyway, will show error in UI
     }
     
-    // Initialize IDE components (optional)
-    let ideAvailable = false;
+    // Initialize Editor components (optional)
+    let editorAvailable = false;
     try {
-      ideLauncher = new IDELauncher();
-      ideAvailable = await ideLauncher.initialize(processManager);
+      // Initialize Lite XL bridge directly with process manager
+      editorBridge = new coditor(processManager);
+      editorAvailable = await editorBridge.initialize();
       
-      if (ideAvailable) {
-        // Initialize VSCodium bridge
-        codiumBridge = new CodiumBridge(ideLauncher);
-        await codiumBridge.initialize();
+      if (!editorAvailable) {
+        console.log('Lite XL not available, running in limited mode');
       } else {
-        console.log('VSCodium not available, running in limited mode');
+        console.log('Lite XL bridge initialized successfully');
       }
     } catch (error) {
-      console.error('Error initializing IDE:', error);
-      // Continue without IDE integration
+      console.error('Error initializing editor:', error);
+      // Continue without editor integration
     }
     
     // Create main window
@@ -170,6 +168,12 @@ const aiReady = await aiService.initialize();
  */
 function setupIPCHandlers() {
   // AI Service handlers
+  ipcMain.handle('get-ai-status', async () => {
+    if (!aiService) return { running: false, error: 'Service not initialized' };
+    return aiService.getStatus();
+  });
+
+  // Maintain backward compatibility
   ipcMain.handle('get-ollama-status', async () => {
     if (!aiService) return { running: false, error: 'Service not initialized' };
     return aiService.getStatus();
@@ -213,15 +217,15 @@ function setupIPCHandlers() {
     }
   });
   
-  // IDE integration handlers
+  // Editor integration handlers
   ipcMain.handle('open-file', async (event, filePath) => {
-    if (!codiumBridge) return { error: 'IDE bridge not available' };
-    return codiumBridge.openFile(filePath);
+    if (!editorBridge) return { error: 'Editor bridge not available' };
+    return editorBridge.openFile(filePath);
   });
   
   ipcMain.handle('create-file', async (event, filePath, content) => {
-    if (!codiumBridge) return { error: 'IDE bridge not available' };
-    return codiumBridge.createFile(filePath, content);
+    if (!editorBridge) return { error: 'Editor bridge not available' };
+    return editorBridge.createFile(filePath, content);
   });
   
   // Dialog handlers
@@ -282,8 +286,8 @@ app.on('will-quit', async () => {
     await aiService.shutdown();
   }
   
-  // Disconnect VSCodium bridge
-  if (codiumBridge) {
-    codiumBridge.disconnect();
+  // Disconnect editor bridge
+  if (editorBridge) {
+    editorBridge.disconnect();
   }
 });
