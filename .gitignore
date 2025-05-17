@@ -26,7 +26,12 @@ yarn-error.log*
 # Electron
 /out
 
-# Ollama models directory
-/modelsresources/bin/ 
-resources/llama-b5410-bin-win-cpu-x64/ 
-resources/llama-b5410-bin-win-cpu-x64.zip 
+# Models and large files
+/models/
+/models/*
+/resources/bin/
+/resources/llama-b5410-bin-win-cpu-x64/
+/resources/llama-b5410-bin-win-cpu-x64.zip
+/resources/**/*.exe
+/resources/**/*.dll
+/resources/**/*.zip
