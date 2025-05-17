@@ -153,71 +153,558 @@ async function initializeCodeLveEditor(container) {
     // Clear the container
     container.innerHTML = '';
     
-    // Create editor placeholder for now
-    const editorDiv = document.createElement('div');
-    editorDiv.className = 'codelve-editor-mock';
-    editorDiv.style.width = '100%';
-    editorDiv.style.height = '100%';
-    editorDiv.style.backgroundColor = '#1e1e2e';
-    editorDiv.style.color = '#cdd6f4';
-    editorDiv.style.padding = '20px';
-    editorDiv.style.boxSizing = 'border-box';
-    editorDiv.style.overflow = 'auto';
-    editorDiv.style.fontFamily = "'Fira Code', monospace";
+    // Create a simple code editor that works in the browser
+
+    // Layout - Split panel with explorer and editor
+    const editorLayout = document.createElement('div');
+    editorLayout.className = 'code-editor-layout';
+    editorLayout.style.display = 'flex';
+    editorLayout.style.width = '100%';
+    editorLayout.style.height = '100%';
+    editorLayout.style.backgroundColor = '#1e1e2e';
+    editorLayout.style.color = '#cdd6f4';
+    container.appendChild(editorLayout);
     
-    // Add some example content
-    editorDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 8px; background: #181825;">
-        <div style="display: flex; align-items: center; font-weight: bold;">
-          <span style="margin-right: 8px;">📁</span>
-          <span>File Explorer</span>
-        </div>
-        <div>
-          <button style="background: none; border: none; color: #cdd6f4; cursor: pointer;">📂</button>
-          <button style="background: none; border: none; color: #cdd6f4; cursor: pointer;">🔄</button>
-        </div>
-      </div>
-      
-      <div style="margin-bottom: 20px; border-bottom: 1px solid #313244; padding-bottom: 10px;">
-        <p style="color: #a6adc8; font-size: 13px;">To open a project folder or file, you would use the File Explorer buttons above.</p>
-      </div>
-      
-      <div style="font-size: 14px; line-height: 1.5;">
-        <p style="margin-bottom: 10px;">The CodeLve Editor would normally appear here, allowing you to:</p>
-        <ul style="margin-left: 20px; list-style-type: circle;">
-          <li>Browse and open files</li>
-          <li>Edit code with syntax highlighting</li>
-          <li>Save changes automatically</li>
-          <li>Provide context to the AI assistant</li>
-        </ul>
-        <p style="margin-top: 15px; color: #f38ba8;">The editor integration requires proper module loading which is being worked on.</p>
+    // File explorer panel
+    const explorerPanel = document.createElement('div');
+    explorerPanel.className = 'explorer-container';
+    explorerPanel.style.width = '250px';
+    explorerPanel.style.minWidth = '150px';
+    explorerPanel.style.maxWidth = '400px';
+    explorerPanel.style.height = '100%';
+    explorerPanel.style.borderRight = '1px solid #313244';
+    explorerPanel.style.overflow = 'hidden';
+    explorerPanel.style.display = 'flex';
+    explorerPanel.style.flexDirection = 'column';
+    editorLayout.appendChild(explorerPanel);
+    
+    // Resize handle
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle-vertical';
+    resizeHandle.style.width = '5px';
+    resizeHandle.style.height = '100%';
+    resizeHandle.style.backgroundColor = '#181825';
+    resizeHandle.style.cursor = 'ew-resize';
+    editorLayout.appendChild(resizeHandle);
+    
+    // Editor panel
+    const editorPanel = document.createElement('div');
+    editorPanel.className = 'editor-container';
+    editorPanel.style.flex = '1';
+    editorPanel.style.height = '100%';
+    editorPanel.style.display = 'flex';
+    editorPanel.style.flexDirection = 'column';
+    editorLayout.appendChild(editorPanel);
+    
+    // Explorer header
+    const explorerHeader = document.createElement('div');
+    explorerHeader.className = 'explorer-header';
+    explorerHeader.style.display = 'flex';
+    explorerHeader.style.alignItems = 'center';
+    explorerHeader.style.justifyContent = 'space-between';
+    explorerHeader.style.padding = '8px 12px';
+    explorerHeader.style.borderBottom = '1px solid #313244';
+    explorerHeader.innerHTML = `
+      <div class="explorer-title" style="font-weight: bold;">Explorer</div>
+      <div class="explorer-actions">
+        <button id="open-folder-btn" class="explorer-action" style="background: none; border: none; cursor: pointer; font-size: 16px; color: #cdd6f4;">📂</button>
+        <button id="refresh-btn" class="explorer-action" style="background: none; border: none; cursor: pointer; font-size: 16px; color: #cdd6f4;">🔄</button>
+        <button id="new-file-btn" class="explorer-action" style="background: none; border: none; cursor: pointer; font-size: 16px; color: #cdd6f4;">📄</button>
       </div>
     `;
+    explorerPanel.appendChild(explorerHeader);
     
-    container.appendChild(editorDiv);
+    // Explorer content
+    const explorerContent = document.createElement('div');
+    explorerContent.className = 'explorer-content';
+    explorerContent.style.flex = '1';
+    explorerContent.style.overflow = 'auto';
+    explorerContent.style.padding = '8px 0';
+    explorerContent.innerHTML = '<div class="explorer-placeholder" style="padding: 16px; text-align: center; color: #6c7086;">No folder opened. Click the folder icon to open a project.</div>';
+    explorerPanel.appendChild(explorerContent);
     
-    // Load the editor module through IPC (this doesn't actually load the editor UI yet)
-    if (window.api && window.api.loadEditor) {
-      const result = await window.api.loadEditor();
-      
-      if (result.error) {
-        throw new Error(result.error);
+    // Editor content
+    const editorContent = document.createElement('div');
+    editorContent.className = 'editor-content';
+    editorContent.style.flex = '1';
+    editorContent.style.position = 'relative';
+    editorPanel.appendChild(editorContent);
+    
+    // Editor placeholder
+    const editorPlaceholder = document.createElement('div');
+    editorPlaceholder.className = 'editor-placeholder';
+    editorPlaceholder.style.position = 'absolute';
+    editorPlaceholder.style.top = '50%';
+    editorPlaceholder.style.left = '50%';
+    editorPlaceholder.style.transform = 'translate(-50%, -50%)';
+    editorPlaceholder.style.textAlign = 'center';
+    editorPlaceholder.style.color = '#6c7086';
+    editorPlaceholder.style.padding = '20px';
+    editorPlaceholder.innerHTML = 'No file selected. Open a file using the Explorer.';
+    editorContent.appendChild(editorPlaceholder);
+    
+    // Create a textarea for editing (hidden initially)
+    const editorTextarea = document.createElement('textarea');
+    editorTextarea.className = 'editor-textarea';
+    editorTextarea.style.width = '100%';
+    editorTextarea.style.height = '100%';
+    editorTextarea.style.padding = '12px';
+    editorTextarea.style.margin = '0';
+    editorTextarea.style.border = 'none';
+    editorTextarea.style.fontFamily = 'monospace';
+    editorTextarea.style.fontSize = '14px';
+    editorTextarea.style.lineHeight = '1.5';
+    editorTextarea.style.backgroundColor = '#1e1e2e';
+    editorTextarea.style.color = '#cdd6f4';
+    editorTextarea.style.resize = 'none';
+    editorTextarea.style.outline = 'none';
+    editorTextarea.style.display = 'none';
+    editorContent.appendChild(editorTextarea);
+    
+    // Editor statusbar
+    const statusBar = document.createElement('div');
+    statusBar.className = 'editor-statusbar';
+    statusBar.style.height = '24px';
+    statusBar.style.display = 'flex';
+    statusBar.style.alignItems = 'center';
+    statusBar.style.padding = '0 12px';
+    statusBar.style.fontSize = '12px';
+    statusBar.style.color = '#a6adc8';
+    statusBar.style.backgroundColor = '#181825';
+    statusBar.style.borderTop = '1px solid #313244';
+    statusBar.innerHTML = '<div>Ready</div>';
+    editorPanel.appendChild(statusBar);
+    
+    // Setup resize functionality
+    setupResizeHandler(resizeHandle, explorerPanel);
+    
+    // Track state
+    const editorState = {
+      currentFolder: null,
+      currentFile: null,
+      files: new Map(), // Map of file paths to contents
+      modified: new Set() // Set of modified file paths
+    };
+    
+    // Setup event handlers
+    document.getElementById('open-folder-btn').addEventListener('click', async () => {
+      if (!window.api || !window.api.showOpenDialog) {
+        showEditorError('The file system API is not available.');
+        return;
       }
       
-      console.log('Editor module loaded successfully through IPC');
-    }
+      try {
+        const result = await window.api.showOpenDialog({
+          properties: ['openDirectory']
+        });
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          await loadFolder(result.filePaths[0], explorerContent, editorState);
+        }
+      } catch (error) {
+        showEditorError(`Error opening folder: ${error.message}`);
+      }
+    });
     
-    // Update editor status
+    document.getElementById('refresh-btn').addEventListener('click', async () => {
+      if (editorState.currentFolder) {
+        await loadFolder(editorState.currentFolder, explorerContent, editorState);
+      }
+    });
+    
+    document.getElementById('new-file-btn').addEventListener('click', async () => {
+      if (!editorState.currentFolder) {
+        showEditorError('Please open a folder first.');
+        return;
+      }
+      
+      const fileName = prompt('Enter file name:');
+      if (!fileName) return;
+      
+      try {
+        const filePath = await createNewFile(editorState.currentFolder, fileName);
+        
+        // Refresh folder
+        await loadFolder(editorState.currentFolder, explorerContent, editorState);
+        
+        // Open the new file
+        await openFile(filePath, editorTextarea, editorPlaceholder, statusBar, editorState);
+      } catch (error) {
+        showEditorError(`Error creating file: ${error.message}`);
+      }
+    });
+    
+    // Add change detection to textarea
+    editorTextarea.addEventListener('input', () => {
+      if (editorState.currentFile) {
+        // Update file content
+        editorState.files.set(editorState.currentFile, editorTextarea.value);
+        editorState.modified.add(editorState.currentFile);
+        
+        // Auto-save
+        saveFile(editorState.currentFile, editorTextarea.value, statusBar, editorState);
+        
+        // Update context for AI
+        if (typeof codeContextProvider !== 'undefined' && codeContextProvider !== null) {
+          codeContextProvider.setActiveFile(editorState.currentFile, editorTextarea.value);
+        }
+      }
+    });
+    
+    // Store reference to the editor for later use
+    window.codeEditor = {
+      state: editorState,
+      openFolder: (path) => loadFolder(path, explorerContent, editorState),
+      openFile: (path) => openFile(path, editorTextarea, editorPlaceholder, statusBar, editorState),
+      getContent: () => editorState.currentFile ? editorState.files.get(editorState.currentFile) : null,
+      getContext: () => {
+        if (!editorState.currentFile) return null;
+        
+        return {
+          path: editorState.currentFile,
+          content: editorState.files.get(editorState.currentFile),
+          language: getFileExtension(editorState.currentFile)
+        };
+      }
+    };
+    
+    // Update editor status indicators
     const ideIndicator = document.getElementById("ide-status-indicator");
     const ideText = document.getElementById("ide-status-text");
 
     if (ideIndicator && ideText) {
       ideIndicator.className = "status-indicator online";
-      ideText.textContent = "CodeLve Editor mock active";
+      ideText.textContent = "CodeLve Editor active";
     }
+    
+    // Success message in status bar
+    statusBar.innerHTML = '<div>Editor initialized successfully</div>';
+    
   } catch (error) {
     console.error('Error initializing CodeLve Editor:', error);
-    showErrorMessage(`Failed to initialize editor: ${error.message}`);
+    
+    // Show error message in the editor container
+    container.innerHTML = `
+      <div style="padding: 20px; color: #f38ba8; text-align: center;">
+        <h3>Error Initializing Editor</h3>
+        <p>${error.message || 'Unknown error'}</p>
+        <button onclick="location.reload()">Retry</button>
+      </div>
+    `;
+    
+    // Update status indicators
+    const ideIndicator = document.getElementById("ide-status-indicator");
+    const ideText = document.getElementById("ide-status-text");
+    
+    if (ideIndicator && ideText) {
+      ideIndicator.className = "status-indicator error";
+      ideText.textContent = "Editor error";
+    }
+  }
+}
+
+/**
+ * Setup resize handler for the explorer panel
+ * 
+ * @param {Element} handle Resize handle element
+ * @param {Element} panel Panel to resize
+ */
+function setupResizeHandler(handle, panel) {
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+  
+  handle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = panel.offsetWidth;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ew-resize';
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    
+    const dx = e.clientX - startX;
+    const newWidth = Math.max(150, Math.min(400, startWidth + dx));
+    panel.style.width = `${newWidth}px`;
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+  });
+}
+
+/**
+ * Load a folder into the explorer
+ * 
+ * @param {string} folderPath Folder path
+ * @param {Element} explorerContent Explorer content element
+ * @param {Object} editorState Editor state
+ */
+async function loadFolder(folderPath, explorerContent, editorState) {
+  if (!window.api || !window.api.listDirectory) {
+    showEditorError('The file system API is not available.');
+    return;
+  }
+  
+  try {
+    // List directory contents
+    const items = await window.api.listDirectory(folderPath);
+    
+    // Set current folder
+    editorState.currentFolder = folderPath;
+    
+    // Clear explorer content
+    explorerContent.innerHTML = '';
+    
+    // Add folder path display
+    const pathDisplay = document.createElement('div');
+    pathDisplay.className = 'path-display';
+    pathDisplay.style.fontSize = '11px';
+    pathDisplay.style.padding = '4px 8px';
+    pathDisplay.style.color = '#6c7086';
+    pathDisplay.style.borderBottom = '1px solid #313244';
+    pathDisplay.style.whiteSpace = 'nowrap';
+    pathDisplay.style.overflow = 'hidden';
+    pathDisplay.style.textOverflow = 'ellipsis';
+    pathDisplay.style.marginBottom = '4px';
+    pathDisplay.textContent = folderPath;
+    explorerContent.appendChild(pathDisplay);
+    
+    // Sort items: directories first, then files
+    items.sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name);
+    });
+    
+    // Add items to explorer
+    for (const item of items) {
+      const itemElement = document.createElement('div');
+      itemElement.className = 'file-item';
+      itemElement.style.padding = '4px 8px';
+      itemElement.style.cursor = 'pointer';
+      itemElement.style.display = 'flex';
+      itemElement.style.alignItems = 'center';
+      itemElement.style.borderRadius = '4px';
+      itemElement.style.margin = '2px 4px';
+      
+      const icon = document.createElement('span');
+      icon.className = 'item-icon';
+      icon.style.marginRight = '6px';
+      icon.textContent = item.isDirectory ? '📁' : '📄';
+      
+      const name = document.createElement('span');
+      name.className = 'item-name';
+      name.style.flex = '1';
+      name.style.whiteSpace = 'nowrap';
+      name.style.overflow = 'hidden';
+      name.style.textOverflow = 'ellipsis';
+      name.textContent = item.name;
+      
+      itemElement.appendChild(icon);
+      itemElement.appendChild(name);
+      
+      // Add hover effect
+      itemElement.addEventListener('mouseover', () => {
+        itemElement.style.backgroundColor = '#313244';
+      });
+      
+      itemElement.addEventListener('mouseout', () => {
+        itemElement.style.backgroundColor = '';
+      });
+      
+      // Add click handler
+      itemElement.addEventListener('click', async (e) => {
+        if (item.isDirectory) {
+          // Open subfolder
+          await loadFolder(item.path, explorerContent, editorState);
+        } else {
+          // Select this item
+          const fileItems = explorerContent.querySelectorAll('.file-item');
+          fileItems.forEach(el => {
+            el.style.backgroundColor = '';
+            el.classList.remove('selected');
+          });
+          
+          itemElement.classList.add('selected');
+          itemElement.style.backgroundColor = '#45475a';
+          
+          // Open file
+          await openFile(item.path, document.querySelector('.editor-textarea'), 
+                         document.querySelector('.editor-placeholder'),
+                         document.querySelector('.editor-statusbar'),
+                         editorState);
+        }
+      });
+      
+      explorerContent.appendChild(itemElement);
+    }
+  } catch (error) {
+    showEditorError(`Error loading folder: ${error.message}`);
+  }
+}
+
+/**
+ * Open a file in the editor
+ * 
+ * @param {string} filePath File path
+ * @param {Element} textarea Editor textarea
+ * @param {Element} placeholder Editor placeholder
+ * @param {Element} statusBar Status bar
+ * @param {Object} editorState Editor state
+ */
+async function openFile(filePath, textarea, placeholder, statusBar, editorState) {
+  if (!window.api || !window.api.readFile) {
+    showEditorError('The file system API is not available.');
+    return;
+  }
+  
+  try {
+    // Load file if not already loaded
+    let content = editorState.files.get(filePath);
+    
+    if (content === undefined) {
+      content = await window.api.readFile(filePath);
+      editorState.files.set(filePath, content);
+    }
+    
+    // Set the current file
+    editorState.currentFile = filePath;
+    
+    // Show content in editor
+    textarea.value = content;
+    textarea.style.display = 'block';
+    placeholder.style.display = 'none';
+    
+    // Apply syntax highlighting (basic)
+    // syntaxHighlight(textarea, getFileExtension(filePath));
+    
+    // Update status bar
+    updateStatusBar(statusBar, filePath);
+    
+    // Focus editor
+    textarea.focus();
+    
+    // Update context for AI
+    if (typeof codeContextProvider !== 'undefined' && codeContextProvider !== null) {
+      codeContextProvider.setActiveFile(filePath, content);
+    }
+  } catch (error) {
+    showEditorError(`Error opening file: ${error.message}`);
+  }
+}
+
+/**
+ * Save the current file
+ * 
+ * @param {string} filePath File path
+ * @param {string} content File content
+ * @param {Element} statusBar Status bar
+ * @param {Object} editorState Editor state
+ */
+async function saveFile(filePath, content, statusBar, editorState) {
+  if (!window.api || !window.api.writeFile) {
+    showEditorError('The file system API is not available.');
+    return;
+  }
+  
+  try {
+    await window.api.writeFile(filePath, content);
+    editorState.modified.delete(filePath);
+    
+    // Update status bar with saved indication
+    updateStatusBar(statusBar, filePath, 'Saved');
+    
+    // Fade out the "Saved" indicator after 2 seconds
+    setTimeout(() => {
+      updateStatusBar(statusBar, filePath);
+    }, 2000);
+  } catch (error) {
+    showEditorError(`Error saving file: ${error.message}`);
+  }
+}
+
+/**
+ * Create a new file
+ * 
+ * @param {string} folderPath Folder path
+ * @param {string} fileName File name
+ * @returns {Promise<string>} File path
+ */
+async function createNewFile(folderPath, fileName) {
+  if (!window.api || !window.api.writeFile) {
+    throw new Error('The file system API is not available.');
+  }
+  
+  // Construct file path
+  const filePath = `${folderPath}/${fileName}`;
+  
+  try {
+    // Check if file exists
+    try {
+      await window.api.readFile(filePath);
+      throw new Error(`File "${fileName}" already exists.`);
+    } catch (err) {
+      // File doesn't exist, which is what we want
+    }
+    
+    // Create empty file
+    await window.api.writeFile(filePath, '');
+    
+    return filePath;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Update the status bar
+ * 
+ * @param {Element} statusBar Status bar element
+ * @param {string} filePath Current file path
+ * @param {string} status Status message (optional)
+ */
+function updateStatusBar(statusBar, filePath, status = null) {
+  if (!statusBar) return;
+  
+  const fileName = filePath.split(/[\/\\]/).pop();
+  const extension = getFileExtension(filePath);
+  
+  statusBar.innerHTML = `
+    <div style="display: flex; justify-content: space-between; width: 100%;">
+      <div>${fileName} ${status ? `- ${status}` : ''}</div>
+      <div>${extension.toUpperCase()}</div>
+    </div>
+  `;
+}
+
+/**
+ * Get file extension
+ * 
+ * @param {string} filePath File path
+ * @returns {string} File extension
+ */
+function getFileExtension(filePath) {
+  return filePath.split('.').pop().toLowerCase();
+}
+
+/**
+ * Show an error message in the editor
+ * 
+ * @param {string} message Error message
+ */
+function showEditorError(message) {
+  console.error(`Editor error: ${message}`);
+  
+  const statusBar = document.querySelector('.editor-statusbar');
+  if (statusBar) {
+    statusBar.innerHTML = `<div style="color: #f38ba8;">Error: ${message}</div>`;
   }
 }
 /**

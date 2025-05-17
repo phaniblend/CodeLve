@@ -2,9 +2,9 @@
  * File Explorer Component for CodeLve
  */
 
+const EventEmitter = require('events');
 const path = require('path');
 const fs = require('fs');
-const EventEmitter = require('events');
 
 class FileExplorer extends EventEmitter {
   constructor() {
@@ -320,16 +320,14 @@ class FileExplorer extends EventEmitter {
     try {
       const filePath = path.join(this.currentPath, fileName);
       
-      // Check if file already exists
-      const exists = await new Promise(resolve => {
-        fs.access(filePath, fs.constants.F_OK, (err) => {
-          resolve(!err);
-        });
-      });
-      
-      if (exists) {
+      // Use the window.api to check if file exists and create it
+      try {
+        await window.api.readFile(filePath);
+        // If we get here, the file exists
         alert(`File "${fileName}" already exists.`);
         return;
+      } catch (e) {
+        // File doesn't exist, continue to create it
       }
       
       // Create empty file

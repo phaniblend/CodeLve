@@ -1,5 +1,5 @@
 /**
- * Ace Editor Component for CodeLve
+ * CodeLve Editor - Built on Ace Editor
  */
 
 const path = require('path');
@@ -35,27 +35,62 @@ class AceEditor {
     // Add to container
     this.container.appendChild(editorContainer);
     
-    // Import Ace
-    const ace = require('ace-builds');
-    require('ace-builds/src-noconflict/mode-javascript');
-    require('ace-builds/src-noconflict/theme-monokai');
-    
-    // Create editor
-    this.editor = ace.edit(editorContainer);
-    this.editor.setTheme('ace/theme/monokai');
-    this.editor.session.setMode('ace/mode/javascript');
-    this.editor.setOptions({
-      fontSize: '14px',
-      showPrintMargin: false,
-      enableBasicAutocompletion: true,
-      enableLiveAutocompletion: true
-    });
-    
-    // Setup change event listener
-    if (this.onChange) {
-      this.editor.session.on('change', () => {
-        this.onChange(this.editor.getValue());
+    // Try to load Ace using require
+    try {
+      const ace = require('ace-builds');
+      require('ace-builds/src-noconflict/mode-javascript');
+      require('ace-builds/src-noconflict/theme-monokai');
+      
+      // Create editor
+      this.editor = ace.edit(editorContainer);
+      this.editor.setTheme('ace/theme/monokai');
+      this.editor.session.setMode('ace/mode/javascript');
+      this.editor.setOptions({
+        fontSize: '14px',
+        showPrintMargin: false,
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true
       });
+      
+      // Setup change event listener
+      if (this.onChange) {
+        this.editor.session.on('change', () => {
+          this.onChange(this.editor.getValue());
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load Ace editor:', err);
+      
+      // Fallback to a simple textarea if Ace cannot be loaded
+      editorContainer.innerHTML = '';
+      const textarea = document.createElement('textarea');
+      textarea.style.width = '100%';
+      textarea.style.height = '100%';
+      textarea.style.fontFamily = 'monospace';
+      textarea.style.fontSize = '14px';
+      textarea.style.padding = '10px';
+      textarea.style.resize = 'none';
+      textarea.style.border = 'none';
+      textarea.style.outline = 'none';
+      
+      editorContainer.appendChild(textarea);
+      
+      // Simple editor API to match Ace interface
+      this.editor = {
+        getValue: () => textarea.value,
+        setValue: (value) => { textarea.value = value; },
+        session: {
+          setMode: () => {} // No-op for textarea
+        },
+        setTheme: () => {} // No-op for textarea
+      };
+      
+      // Add change event listener to textarea
+      if (this.onChange) {
+        textarea.addEventListener('input', () => {
+          this.onChange(textarea.value);
+        });
+      }
     }
     
     this.isInitialized = true;
@@ -70,7 +105,7 @@ class AceEditor {
   setContent(content) {
     if (!this.isInitialized || !this.editor) return;
     
-    this.editor.setValue(content, -1); // -1 to put cursor at the start
+    this.editor.setValue(content || '', -1); // -1 to put cursor at the start
   }
 
   /**
@@ -123,9 +158,18 @@ class AceEditor {
     
     if (modeMap[ext]) {
       mode = modeMap[ext];
+      
+      try {
+        // Try to load the mode
+        require(`ace-builds/src-noconflict/mode-${mode.split('/').pop()}`);
+        this.editor.session.setMode(mode);
+      } catch (err) {
+        console.warn(`Mode ${mode} not available, using text mode`);
+        this.editor.session.setMode('ace/mode/text');
+      }
+    } else {
+      this.editor.session.setMode(mode);
     }
-    
-    this.editor.session.setMode(mode);
   }
 
   /**
@@ -154,14 +198,20 @@ class AceEditor {
   setTheme(theme) {
     if (!this.isInitialized || !this.editor) return;
     
-    this.editor.setTheme(`ace/theme/${theme}`);
+    try {
+      // Try to load the theme
+      require(`ace-builds/src-noconflict/theme-${theme}`);
+      this.editor.setTheme(`ace/theme/${theme}`);
+    } catch (err) {
+      console.warn(`Theme ${theme} not available`);
+    }
   }
 
   /**
    * Clean up resources
    */
   cleanup() {
-    if (this.editor) {
+    if (this.editor && typeof this.editor.destroy === 'function') {
       this.editor.destroy();
       this.editor = null;
     }
