@@ -24,8 +24,15 @@ class CodeContextProvider {
    * @param {string} content Current content of the file
    */
   setActiveFile(filePath, content) {
+    if (!filePath) return;
+    
     this.activeFile = filePath;
-    this.updateFileContent(filePath, content);
+    this.openFiles.set(filePath, content);
+    
+    console.log(`Active file set to: ${filePath}`);
+    
+    // Start watching this file for changes if not already watching
+    this.watchFile(filePath);
   }
 
   /**
@@ -139,46 +146,49 @@ class CodeContextProvider {
    * @returns {string} Context string for the AI
    */
   getContext(activeFileOnly = false) {
-    if (activeFileOnly) {
-      const activeFile = this.getActiveFile();
-      if (!activeFile) return '';
-      
-      return this.formatFileContext(activeFile.path, activeFile.content);
+    // If we have an active file, use it
+    if (this.activeFile && this.openFiles.has(this.activeFile)) {
+      const content = this.openFiles.get(this.activeFile);
+      return this.formatFileContext(this.activeFile, content);
     }
     
-    // Start with the active file
-    let context = '';
-    const activeFile = this.getActiveFile();
-    
-    if (activeFile) {
-      context += this.formatFileContext(activeFile.path, activeFile.content);
-    }
-    
-    // Add related files if space allows
-    let remainingChars = this.maxContextSize - context.length;
-    
-    if (remainingChars > 0) {
-      for (const [filePath, content] of this.openFiles.entries()) {
-        // Skip the active file as we've already added it
-        if (filePath === this.activeFile) continue;
-        
-        const fileContext = this.formatFileContext(filePath, content);
-        
-        // Check if we can fit this file in the context
-        if (fileContext.length < remainingChars) {
-          context += '\n\n' + fileContext;
-          remainingChars -= fileContext.length + 2; // +2 for the newlines
-        } else {
-          // We can't fit the whole file, so just add a truncated version
-          const truncatedContext = this.formatFileContext(
-            filePath, 
-            content.substring(0, remainingChars - 100) + '\n... (truncated)'
-          );
-          
-          context += '\n\n' + truncatedContext;
-          break;
-        }
+    // If the global code editor is available, try to get context from it
+    if (window.codeEditor && typeof window.codeEditor.getFileContext === 'function') {
+      const fileContext = window.codeEditor.getFileContext();
+      if (fileContext && fileContext.path && fileContext.content) {
+        return this.formatFileContext(fileContext.path, fileContext.content);
       }
+    }
+
+    // If activeFileOnly is true, return empty string if no active file
+    if (activeFileOnly) return '';
+    
+    // Otherwise, include other open files
+    let context = '';
+    
+    // Calculate remaining context size
+    let remainingSize = this.maxContextSize;
+    
+    // Add open files to context until max size is reached
+    for (const [filePath, content] of this.openFiles.entries()) {
+      // Skip if this would exceed max context size
+      const fileContext = this.formatFileContext(filePath, content);
+      if (fileContext.length > remainingSize) continue;
+      
+      // Add file context with separator
+      if (context) context += '\n\n';
+      context += fileContext;
+      
+      // Update remaining size
+      remainingSize -= fileContext.length;
+      
+      // Break if no more room
+      if (remainingSize <= 0) break;
+    }
+    
+    // If no context was added, return default example
+    if (!context) {
+      return 'File: test.js\nPath: /test.js\nType: js\n\n```js\n// Sample code for testing\nfunction hello() {\n  console.log("Hello, world!");\n}\n```';
     }
     
     return context;

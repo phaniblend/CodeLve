@@ -1,0 +1,315 @@
+/* CodeLve Editor Styling */
+
+/* Editor container */
+.codelve-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Light theme version */
+.codelve-editor-container.light-theme {
+  background-color: #fafafa;
+  color: #24273a;
+}
+
+/* Editor header with branding */
+.codelve-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #181825;
+  border-bottom: 1px solid #313244;
+}
+
+.light-theme .codelve-editor-header {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.codelve-logo {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.codelve-logo svg {
+  margin-right: 8px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #cdd6f4;
+  border-radius: 4px;
+  padding: 2px 6px;
+  transition: background-color 0.2s;
+}
+
+.light-theme .editor-action {
+  color: #24273a;
+}
+
+.editor-action:hover {
+  background-color: #313244;
+}
+
+.light-theme .editor-action:hover {
+  background-color: #e0e0e0;
+}
+
+/* Ace editor instance */
+.ace-editor-instance {
+  flex: 1;
+  width: 100%;
+  /* Height is set inline in JS */
+}
+
+/* Status bar */
+.codelve-editor-statusbar {
+  display: flex;
+  padding: 4px 12px;
+  background-color: #181825;
+  color: #a6adc8;
+  font-size: 12px;
+  border-top: 1px solid #313244;
+}
+
+.light-theme .codelve-editor-statusbar {
+  background-color: #f0f0f0;
+  border-top: 1px solid #d0d0d0;
+  color: #6c7086;
+}
+
+.status-position {
+  margin-right: 16px;
+}
+
+.status-file {
+  margin-right: 16px;
+  flex: 1;
+}
+
+.status-language {
+  font-weight: 500;
+}
+
+/* File explorer */
+.codelve-file-explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #181825;
+  color: #cdd6f4;
+}
+
+.light-theme .codelve-file-explorer {
+  background-color: #f0f0f0;
+  color: #24273a;
+}
+
+.explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #181825;
+  border-bottom: 1px solid #313244;
+}
+
+.light-theme .explorer-header {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.explorer-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.explorer-title svg {
+  margin-right: 8px;
+}
+
+.explorer-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.explorer-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cdd6f4;
+  font-size: 15px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.light-theme .explorer-action {
+  color: #24273a;
+}
+
+.explorer-action:hover {
+  background-color: #313244;
+}
+
+.light-theme .explorer-action:hover {
+  background-color: #e0e0e0;
+}
+
+.explorer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.explorer-placeholder {
+  padding: 16px;
+  text-align: center;
+  color: #a6adc8;
+  font-size: 13px;
+}
+
+.light-theme .explorer-placeholder {
+  color: #6c7086;
+}
+
+/* File tree */
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 4px;
+  margin: 1px 4px;
+}
+
+.file-item:hover {
+  background-color: #313244;
+}
+
+.light-theme .file-item:hover {
+  background-color: #e0e0e0;
+}
+
+.file-item.selected {
+  background-color: #45475a;
+}
+
+.light-theme .file-item.selected {
+  background-color: #d0d0e0;
+}
+
+.file-item .item-icon {
+  margin-right: 6px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.file-item .item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.directory-contents {
+  padding-left: 12px;
+}
+
+/* Path display */
+.path-display {
+  font-size: 11px;
+  padding: 4px 8px;
+  color: #a6adc8;
+  border-bottom: 1px solid #313244;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.light-theme .path-display {
+  color: #6c7086;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+/* Integrated layout */
+.codelve-integrated-editor {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.integrated-editor-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.explorer-container {
+  max-width: 40%;
+  height: 100%;
+  overflow: hidden;
+  border-right: 1px solid #313244;
+}
+
+.light-theme .explorer-container {
+  border-right: 1px solid #d0d0d0;
+}
+
+.editor-view-container {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.resize-handle-vertical {
+  width: 5px;
+  height: 100%;
+  background-color: #181825;
+  cursor: ew-resize;
+  transition: background-color 0.2s;
+}
+
+.resize-handle-vertical:hover {
+  background-color: #0078d4;
+}
+
+.light-theme .resize-handle-vertical {
+  background-color: #f0f0f0;
+}
+
+.light-theme .resize-handle-vertical:hover {
+  background-color: #2196f3;
+}
+
+/* Error message */
+.editor-error {
+  padding: 24px;
+  color: #f38ba8;
+  text-align: center;
+}
+
+.light-theme .editor-error {
+  color: #d32f2f;
+}

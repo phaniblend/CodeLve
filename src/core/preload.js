@@ -37,6 +37,16 @@ contextBridge.exposeInMainWorld(
     openFile: (path) => ipcRenderer.invoke('open-file', path),
     createFile: (path, content) => ipcRenderer.invoke('create-file', path, content),
     
+    // Editor access
+    loadEditor: async () => {
+      try {
+        return await ipcRenderer.invoke('load-editor');
+      } catch (error) {
+        console.error('Error loading editor:', error);
+        throw error;
+      }
+    },
+    
     // Settings methods
     getSettings: () => ipcRenderer.invoke('get-settings'),
     saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings)

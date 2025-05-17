@@ -12,7 +12,6 @@ const Store = require('electron-store');
 
 // Custom modules
 const ProcessManager = require('./process-manager');
-const coditor = require('../editor/coditor-bridge');
 const LlamaService = require('../ai/llama-process-service');
 const CodeContextProvider = require('../context/code-context-provider');
 
@@ -20,7 +19,15 @@ const CodeContextProvider = require('../context/code-context-provider');
 let mainWindow = null;
 const processManager = new ProcessManager();
 let aiService = null; // Using llama.cpp for local LLM support
-let editorBridge = null;
+
+// Mock editor bridge for now
+const editorBridge = {
+  initialize: async () => false,
+  openFile: async () => ({ error: 'Editor not available' }),
+  createFile: async () => ({ error: 'Editor not available' }),
+  disconnect: () => {}
+};
+
 let codeContextProvider = null;
 
 // Settings store
@@ -125,30 +132,20 @@ async function initializeApp() {
     codeContextProvider = new CodeContextProvider();
     
     // Initialize AI service (using llama.cpp)
+    console.log('Initializing AI service...');
     aiService = new LlamaService();
     const aiReady = await aiService.initialize();
     
     if (!aiReady) {
       console.error('Failed to initialize AI service');
       // Continue anyway, will show error in UI
+    } else {
+      console.log('AI service initialized successfully');
     }
     
-    // Initialize Editor components (optional)
+    // We're not using a real editor bridge for now
     let editorAvailable = false;
-    try {
-      // Initialize Lite XL bridge directly with process manager
-      editorBridge = new coditor(processManager);
-      editorAvailable = await editorBridge.initialize();
-      
-      if (!editorAvailable) {
-        console.log('Lite XL not available, running in limited mode');
-      } else {
-        console.log('Lite XL bridge initialized successfully');
-      }
-    } catch (error) {
-      console.error('Error initializing editor:', error);
-      // Continue without editor integration
-    }
+    console.log('Editor bridge not available, running in limited mode');
     
     // Create main window
     createMainWindow();
@@ -258,6 +255,18 @@ function setupIPCHandlers() {
       settings.set(key, newSettings[key]);
     });
     return settings.store;
+  });
+  
+  // Editor loading
+  ipcMain.handle('load-editor', async () => {
+    try {
+      // Since we're not using a real editor module yet, just return success
+      console.log('Mock editor loading success');
+      return { success: true };
+    } catch (error) {
+      console.error('Error loading editor module:', error);
+      return { error: error.message };
+    }
   });
 }
 

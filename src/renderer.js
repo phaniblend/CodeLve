@@ -144,6 +144,83 @@ function createMainWindow() {
 }
 
 /**
+ * Initialize the CodeLve Editor
+ * 
+ * @param {Element} container Editor container
+ */
+async function initializeCodeLveEditor(container) {
+  try {
+    // Clear the container
+    container.innerHTML = '';
+    
+    // Create editor placeholder for now
+    const editorDiv = document.createElement('div');
+    editorDiv.className = 'codelve-editor-mock';
+    editorDiv.style.width = '100%';
+    editorDiv.style.height = '100%';
+    editorDiv.style.backgroundColor = '#1e1e2e';
+    editorDiv.style.color = '#cdd6f4';
+    editorDiv.style.padding = '20px';
+    editorDiv.style.boxSizing = 'border-box';
+    editorDiv.style.overflow = 'auto';
+    editorDiv.style.fontFamily = "'Fira Code', monospace";
+    
+    // Add some example content
+    editorDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 8px; background: #181825;">
+        <div style="display: flex; align-items: center; font-weight: bold;">
+          <span style="margin-right: 8px;">📁</span>
+          <span>File Explorer</span>
+        </div>
+        <div>
+          <button style="background: none; border: none; color: #cdd6f4; cursor: pointer;">📂</button>
+          <button style="background: none; border: none; color: #cdd6f4; cursor: pointer;">🔄</button>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 20px; border-bottom: 1px solid #313244; padding-bottom: 10px;">
+        <p style="color: #a6adc8; font-size: 13px;">To open a project folder or file, you would use the File Explorer buttons above.</p>
+      </div>
+      
+      <div style="font-size: 14px; line-height: 1.5;">
+        <p style="margin-bottom: 10px;">The CodeLve Editor would normally appear here, allowing you to:</p>
+        <ul style="margin-left: 20px; list-style-type: circle;">
+          <li>Browse and open files</li>
+          <li>Edit code with syntax highlighting</li>
+          <li>Save changes automatically</li>
+          <li>Provide context to the AI assistant</li>
+        </ul>
+        <p style="margin-top: 15px; color: #f38ba8;">The editor integration requires proper module loading which is being worked on.</p>
+      </div>
+    `;
+    
+    container.appendChild(editorDiv);
+    
+    // Load the editor module through IPC (this doesn't actually load the editor UI yet)
+    if (window.api && window.api.loadEditor) {
+      const result = await window.api.loadEditor();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      console.log('Editor module loaded successfully through IPC');
+    }
+    
+    // Update editor status
+    const ideIndicator = document.getElementById("ide-status-indicator");
+    const ideText = document.getElementById("ide-status-text");
+
+    if (ideIndicator && ideText) {
+      ideIndicator.className = "status-indicator online";
+      ideText.textContent = "CodeLve Editor mock active";
+    }
+  } catch (error) {
+    console.error('Error initializing CodeLve Editor:', error);
+    showErrorMessage(`Failed to initialize editor: ${error.message}`);
+  }
+}
+/**
  * Create editor placeholder when Lite XL is not available
  *
  * @param {Element} container Editor container element
@@ -156,29 +233,23 @@ function createEditorPlaceholder(container) {
     <div class="editor-placeholder-icon">📝</div>
     <h2 class="editor-placeholder-title">Editor Not Available</h2>
     <p class="editor-placeholder-text">
-      The integrated editor component is not available. 
-      CodeLve works best with Lite XL installed. 
-      You can still use the AI assistant to answer questions and generate code.
+      The integrated editor component is not active yet.
+      Click the button below to initialize the CodeLve Editor.
     </p>
-    <button class="editor-placeholder-button" id="install-editor-button">
-      Install Lite XL
+    <button class="editor-placeholder-button" id="init-editor-button">
+      Initialize CodeLve Editor
     </button>
   `;
 
   container.appendChild(placeholder);
 
-  // Add event listener for install button
+  // Add event listener for initialize button
   document
-    .getElementById("install-editor-button")
+    .getElementById("init-editor-button")
     ?.addEventListener("click", () => {
-      if (window.api && window.api.openExternal) {
-        window.api.openExternal("https://lite-xl.com/");
-      } else {
-        window.open("https://lite-xl.com/", "_blank");
-      }
+      initializeCodeLveEditor(container);
     });
 }
-
 /**
  * Create and setup the main layout
  */

@@ -1,0 +1,103 @@
+.code-editor-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.explorer-container {
+  width: 250px;
+  height: 100%;
+  overflow: auto;
+  border-right: 1px solid #ccc;
+}
+
+.editor-container {
+  flex: 1;
+  height: 100%;
+}
+
+.resize-handle-vertical {
+  width: 5px;
+  height: 100%;
+  background-color: #ccc;
+  cursor: ew-resize;
+}
+
+.resize-handle-vertical:hover {
+  background-color: #999;
+}
+
+.file-explorer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.explorer-title {
+  font-weight: bold;
+}
+
+.explorer-actions {
+  display: flex;
+}
+
+.explorer-action {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.explorer-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.explorer-placeholder {
+  padding: 16px;
+  text-align: center;
+  color: #666;
+}
+
+.tree-view {
+  padding: 4px;
+}
+
+.tree-node {
+  margin: 2px 0;
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.node-content:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.node-icon {
+  margin-right: 4px;
+}
+
+.node-children {
+  display: block;
+}
+
+.ace-editor {
+  width: 100%;
+  height: 100%;
+}
