@@ -940,7 +940,17 @@ async function sendMessage(content) {
       if (response.error) {
         addSystemMessage(messagesContainer, `Error: ${response.error}`);
       } else if (response.response) {
-        addAIMessage(messagesContainer, response.response);
+        // Clean up the response text to remove any remaining prompt text
+        let cleanResponse = response.response;
+        
+        // Clean up common patterns that might be in the response
+        cleanResponse = cleanResponse.replace(/^(CODELVE RESPONSE:|RESPONSE:)/i, '').trim();
+        
+        // Remove any trailing "[end of text]" markers
+        cleanResponse = cleanResponse.replace(/\[end of text\]$/i, '').trim();
+        
+        // Add properly cleaned response to chat
+        addAIMessage(messagesContainer, cleanResponse);
       } else {
         addSystemMessage(messagesContainer, 'Received empty response from AI.');
       }
@@ -1092,17 +1102,48 @@ function removeMessage(container, id) {
  * @param {string} content Message content
  * @returns {string} Processed content
  */
+
+/**
+ * Process code blocks in message content with better syntax highlighting
+ *
+ * @param {string} content Message content
+ * @returns {string} Processed content
+ */
 function processCodeBlocks(content) {
   // Replace code blocks with styled elements
-  return content.replace(
+  let processedContent = content.replace(
     /```([\w]*)\n([\s\S]*?)```/g,
     (match, language, code) => {
       const langClass = language ? ` language-${language}` : "";
-      return `<pre class="code-block${langClass}"><code>${escapeHTML(
-        code
-      )}</code></pre>`;
+      const langLabel = language ? 
+                        `<div class="code-block-language">${language}</div>` : 
+                        "";
+      
+      // Replace tabs with spaces for better display
+      const processedCode = code
+        .replace(/\t/g, '  ')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      
+      return `
+        <div class="code-block-container">
+          ${langLabel}
+          <pre class="code-block${langClass}"><code>${processedCode}</code></pre>
+          <button class="copy-code-button" onclick="navigator.clipboard.writeText(\`${
+            code.replace(/`/g, '\\`').replace(/\$/g, '\\$')
+          }\`)">Copy</button>
+        </div>
+      `;
     }
   );
+  
+  // Also handle inline code
+  processedContent = processedContent.replace(
+    /`([^`]+)`/g,
+    '<code class="inline-code">$1</code>'
+  );
+  
+  return processedContent;
 }
 
 /**

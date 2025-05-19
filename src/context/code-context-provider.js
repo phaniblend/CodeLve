@@ -145,54 +145,57 @@ class CodeContextProvider {
    * @param {boolean} activeFileOnly If true, only include the active file
    * @returns {string} Context string for the AI
    */
-  getContext(activeFileOnly = false) {
-    // If we have an active file, use it
-    if (this.activeFile && this.openFiles.has(this.activeFile)) {
-      const content = this.openFiles.get(this.activeFile);
-      return this.formatFileContext(this.activeFile, content);
-    }
-    
-    // If the global code editor is available, try to get context from it
-    if (window.codeEditor && typeof window.codeEditor.getFileContext === 'function') {
-      const fileContext = window.codeEditor.getFileContext();
-      if (fileContext && fileContext.path && fileContext.content) {
-        return this.formatFileContext(fileContext.path, fileContext.content);
-      }
-    }
-
-    // If activeFileOnly is true, return empty string if no active file
-    if (activeFileOnly) return '';
-    
-    // Otherwise, include other open files
-    let context = '';
-    
-    // Calculate remaining context size
-    let remainingSize = this.maxContextSize;
-    
-    // Add open files to context until max size is reached
-    for (const [filePath, content] of this.openFiles.entries()) {
-      // Skip if this would exceed max context size
-      const fileContext = this.formatFileContext(filePath, content);
-      if (fileContext.length > remainingSize) continue;
-      
-      // Add file context with separator
-      if (context) context += '\n\n';
-      context += fileContext;
-      
-      // Update remaining size
-      remainingSize -= fileContext.length;
-      
-      // Break if no more room
-      if (remainingSize <= 0) break;
-    }
-    
-    // If no context was added, return default example
-    if (!context) {
-      return 'File: test.js\nPath: /test.js\nType: js\n\n```js\n// Sample code for testing\nfunction hello() {\n  console.log("Hello, world!");\n}\n```';
-    }
-    
-    return context;
+  
+getContext(activeFileOnly = false) {
+  // If we have an active file, use it
+  if (this.activeFile && this.openFiles.has(this.activeFile)) {
+    const content = this.openFiles.get(this.activeFile);
+    return this.formatFileContext(this.activeFile, content);
   }
+  
+  // If the global code editor is available, try to get context from it
+  if (typeof window !== 'undefined' && 
+      window.codeEditor && 
+      typeof window.codeEditor.getContext === 'function') {
+    const fileContext = window.codeEditor.getContext();
+    if (fileContext && fileContext.path && fileContext.content) {
+      return this.formatFileContext(fileContext.path, fileContext.content);
+    }
+  }
+
+  // If activeFileOnly is true, return empty string if no active file
+  if (activeFileOnly) return '';
+  
+  // Otherwise, include other open files
+  let context = '';
+  
+  // Calculate remaining context size
+  let remainingSize = this.maxContextSize;
+  
+  // Add open files to context until max size is reached
+  for (const [filePath, content] of this.openFiles.entries()) {
+    // Skip if this would exceed max context size
+    const fileContext = this.formatFileContext(filePath, content);
+    if (fileContext.length > remainingSize) continue;
+    
+    // Add file context with separator
+    if (context) context += '\n\n';
+    context += fileContext;
+    
+    // Update remaining size
+    remainingSize -= fileContext.length;
+    
+    // Break if no more room
+    if (remainingSize <= 0) break;
+  }
+  
+  // If no context was added, return default example
+  if (!context) {
+    return 'File: example.js\nPath: /example.js\nType: js\n\n```js\n// This is a simple JavaScript function\nfunction hello() {\n  console.log("Hello, world!");\n  return "Hello, world!";\n}\n```';
+  }
+  
+  return context;
+}
 
   /**
    * Format a file's content as context for the AI
